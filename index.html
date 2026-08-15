@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Charge Verify — ACJM Baghpat</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --navy:#0c1a3d;
+  --navy-2:#152348;
+  --navy-3:#1d3068;
+  --gold:#c9a227;
+  --gold-light:#e8be44;
+  --p:#1e40af;
+  --ph:#1e3a8a;
+  --bg:#eef2f8;
+  --sur:#ffffff;
+  --txt:#0f172a;
+  --mu:#64748b;
+  --bdr:#dde4f0;
+  --dan:#dc2626;
+  --danh:#b91c1c;
+  --suc:#16a34a;
+  --such:#15803d;
+  --amb:#d97706;
+  --ambh:#b45309;
+  --inf:#0369a1;
+  --rm:10px;
+  --ss:0 1px 4px rgba(12,26,61,.07),0 2px 8px rgba(12,26,61,.05);
+  --card-r:16px;
+  --transition:all .2s cubic-bezier(.4,0,.2,1);
+}
+html,body{font-family:'Outfit','Noto Sans Devanagari',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;padding-bottom:100px;-webkit-font-smoothing:antialiased}
+button{cursor:pointer;font-family:inherit}
+
+/* ══════════ HEADER ══════════ */
+#app-hdr{
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  color:#fff;padding:14px 16px 0;position:sticky;top:0;z-index:200;
+  box-shadow:0 4px 20px rgba(12,26,61,.35);
+}
+#app-hdr-title{
+  font-size:15px;font-weight:700;text-align:center;padding-bottom:13px;
+  letter-spacing:.1px;display:flex;align-items:center;justify-content:center;gap:8px;opacity:.95;
+}
+#tab-bar{display:flex;border-top:1px solid rgba(255,255,255,.12);gap:2px;padding:0 2px}
+.tab-btn{
+  flex:1;padding:12px 8px;background:none;border:none;color:rgba(255,255,255,.55);
+  font-size:13.5px;font-weight:600;border-bottom:3px solid transparent;
+  transition:var(--transition);font-family:inherit;border-radius:0;
+}
+.tab-btn.on{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,.08)}
+#stDot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:6px;vertical-align:middle;flex-shrink:0;background:#4ade80}
+#stDot.warn{background:#fbbf24}
+
+/* ══════════ LAYOUT ══════════ */
+.tab-c{display:none}.tab-c.on{display:block}
+.cnt{padding:14px;max-width:1000px;margin:0 auto}
+.sec{
+  background:var(--sur);padding:18px;margin-bottom:12px;border-radius:var(--card-r);
+  box-shadow:var(--ss);border:1px solid rgba(221,228,240,.7);
+}
+h3{
+  margin:0 0 14px;font-weight:700;display:flex;align-items:center;gap:8px;
+  letter-spacing:.1px;text-transform:uppercase;font-size:11.5px;color:var(--mu);
+}
+
+/* ══════════ INPUTS ══════════ */
+input[type=text],input[type=date],select,textarea{
+  width:100%;padding:12px 14px;margin-top:6px;font-size:15px;font-weight:500;
+  border-radius:var(--rm);border:1.5px solid var(--bdr);
+  background:#f9fafc;color:var(--txt);font-family:inherit;outline:none;
+  transition:var(--transition);appearance:none;
+}
+textarea{min-height:74px;resize:vertical;font-size:13.5px}
+input[type=text]:focus,input[type=date]:focus,select:focus,textarea:focus{
+  border-color:var(--p);box-shadow:0 0 0 3px rgba(30,64,175,.12);background:var(--sur);
+}
+input[type=file]{width:100%;padding:10px;margin-top:6px;font-size:14px;border-radius:var(--rm);border:1.5px solid var(--bdr);background:var(--sur)}
+label.fl{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-top:10px}
+
+/* ══════════ BUTTONS ══════════ */
+.btn{
+  width:100%;padding:13px 16px;margin-top:10px;font-size:14px;font-weight:700;
+  border-radius:var(--rm);border:none;
+  background:linear-gradient(135deg,var(--p),var(--navy-3));color:#fff;
+  box-shadow:0 3px 12px rgba(30,64,175,.3);transition:var(--transition);
+  display:flex;justify-content:center;align-items:center;gap:8px;
+  letter-spacing:.15px;font-family:inherit;
+}
+.btn:active{transform:scale(.97);box-shadow:0 1px 6px rgba(30,64,175,.2)}
+.btn:hover{filter:brightness(1.08)}
+.btn-d{background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 3px 12px rgba(220,38,38,.3)}
+.btn-s{background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 3px 12px rgba(22,163,74,.3)}
+.btn-a{background:linear-gradient(135deg,#d97706,#b45309);box-shadow:0 3px 12px rgba(217,119,6,.3)}
+.btn-g{background:linear-gradient(135deg,#94a3b8,#64748b);box-shadow:0 3px 12px rgba(100,116,139,.25)}
+.btn-pu{background:linear-gradient(135deg,#7c3aed,#6d28d9);box-shadow:0 3px 12px rgba(124,58,237,.3)}
+.btn-opu{background:transparent;border:2px solid #7c3aed;color:#7c3aed;box-shadow:none}
+.btn-sm{width:auto;padding:7px 14px;font-size:12px;margin-top:0;font-weight:600}
+
+/* ══════════ DASHBOARD ══════════ */
+.dash{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+.card{
+  background:var(--sur);padding:9px 4px 10px;border-radius:12px;
+  text-align:center;font-weight:600;font-size:10px;color:var(--mu);line-height:1.35;
+  box-shadow:var(--ss);border:1px solid rgba(221,228,240,.7);position:relative;overflow:hidden;
+}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--p),var(--navy-3));opacity:.7}
+.card span{font-size:20px;color:var(--navy);font-weight:800;display:block;letter-spacing:-.6px}
+@media(min-width:520px){.card{font-size:11.5px;padding:12px 6px 13px}.card span{font-size:24px}}
+#vCard::before{background:linear-gradient(90deg,#16a34a,#4ade80)}
+#pCard::before{background:linear-gradient(90deg,#d97706,#fbbf24)}
+#eCard::before{background:linear-gradient(90deg,#dc2626,#f87171)}
+.pbar{height:8px;border-radius:6px;background:#e2e8f0;overflow:hidden;margin-top:10px}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,#15803d,#4ade80);width:0;transition:width .35s ease}
+
+/* ══════════ TABLE ══════════ */
+.twrap{
+  background:var(--sur);border-radius:var(--card-r);overflow-x:auto;
+  box-shadow:var(--ss);border:1px solid rgba(221,228,240,.7);margin-bottom:12px;
+}
+table{width:100%;border-collapse:collapse;min-width:940px;text-align:left}
+th,td{border-bottom:1px solid var(--bdr);padding:11px 14px;font-size:13px}
+th{background:#f1f5fb;font-weight:700;font-size:11.5px;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--mu);position:sticky;top:0;z-index:10}
+td input{width:100%;border:1px solid transparent;padding:7px;font-size:13px;background:transparent;border-radius:6px;font-family:inherit;margin-top:0}
+td input:focus{background:var(--sur);border:1px solid var(--p);outline:none;box-shadow:none}
+tr:last-child td{border-bottom:none}
+tr:nth-child(even) td{background:#fafbfd}
+tr:hover td{background:#f0f4ff}
+.cnoL{color:var(--p);font-weight:800;cursor:pointer;text-decoration:underline dotted;font-size:14px}
+.pill{font-size:11px;padding:2px 8px;border-radius:5px;font-weight:700;white-space:nowrap}
+.pill-v{background:#dcfce7;color:#15803d}
+.pill-p{background:#fef9c3;color:#a16207}
+.pill-e{background:#fee2e2;color:#b91c1c}
+#moreWrap{text-align:center;margin:-4px 0 12px}
+#tblInfo{text-align:center;color:var(--mu);font-size:11.5px;margin-bottom:12px;font-weight:600}
+
+/* ══════════ FILTER TABS ══════════ */
+.ftabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.ftab{
+  flex:1;min-width:0;padding:10px 6px;border-radius:12px;
+  border:1.5px solid var(--bdr);background:var(--bg);color:var(--mu);
+  font-size:11.5px;font-weight:600;cursor:pointer;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  transition:var(--transition);font-family:inherit;
+}
+.ftab .tc{font-size:20px;font-weight:800;color:var(--mu)}
+.ft-all{background:#e8f0fe;border-color:#93b4fd;color:var(--p)}
+.ft-all .tc{color:var(--p)}
+.ft-pd{background:#fff7ed;border-color:#fcd34d;color:var(--ambh)}
+.ft-pd .tc{color:var(--ambh)}
+.ft-vf{background:#f0fdf4;border-color:#86efac;color:var(--such)}
+.ft-vf .tc{color:var(--such)}
+.ft-ex{background:#fef2f2;border-color:#fca5a5;color:var(--danh)}
+.ft-ex .tc{color:var(--danh)}
+
+/* ══════════ VERIFICATION BAR ══════════ */
+#verifySec{border:1.5px solid #93b4fd;background:linear-gradient(135deg,#f5f9ff,#fff)}
+#verifySec h3{color:var(--p)}
+#manualCaseInput{font-size:17px;font-weight:700;padding:14px 16px;letter-spacing:.5px}
+
+/* ══════════ DROPDOWN ══════════ */
+.dwrap{position:relative}
+#caseDD{
+  position:absolute;top:calc(100% + 6px);left:0;right:0;
+  background:var(--sur);border:1.5px solid #93b4fd;border-radius:12px;
+  max-height:250px;overflow-y:auto;z-index:500;
+  box-shadow:0 8px 30px rgba(12,26,61,.16);display:none;
+}
+.di{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--bdr);display:flex;gap:10px;align-items:center}
+.di:last-child{border-bottom:none}
+.di:hover,.di.act{background:#eef2ff}
+.di-no{font-weight:800;color:var(--p);font-size:15px;min-width:54px}
+.di-bd{min-width:0;flex:1}
+.di-cn{font-weight:700;color:var(--txt);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.di-pt{color:var(--mu);font-size:11px;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ══════════ STATUS MSG ══════════ */
+.smsg{margin-top:10px;padding:11px 14px;border-radius:10px;font-size:14px;font-weight:600;display:none}
+.s-ok{background:#f0fdf4;color:#15803d;border:1.5px solid #86efac;display:block}
+.s-err{background:#fef2f2;color:#b91c1c;border:1.5px solid #fca5a5;display:block}
+.s-info{background:#eef2ff;color:var(--p);border:1.5px solid #93b4fd;display:block}
+.s-warn{background:#fffbeb;color:#92400e;border:1.5px solid #fcd34d;display:block}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.g2 .btn{margin-top:0}
+
+/* ══════════ FLOATING ══════════ */
+.flt{position:fixed;bottom:18px;right:14px;display:flex;flex-direction:column;gap:10px;z-index:100}
+.flt .btn{width:152px;margin-top:0;font-size:13px;padding:13px 12px;
+  box-shadow:0 6px 20px rgba(12,26,61,.3);border-radius:14px}
+
+/* ══════════ MODAL ══════════ */
+.modal{position:fixed;inset:0;background:rgba(8,14,30,.6);display:none;z-index:700;align-items:flex-end;backdrop-filter:blur(4px)}
+.modal.on{display:flex}
+.modal.center{align-items:center;justify-content:center}
+.msh{
+  background:var(--sur);border-radius:22px 22px 0 0;padding:22px 18px;width:100%;
+  max-height:92vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(12,26,61,.2);
+  animation:slideUp .28s cubic-bezier(.25,.46,.45,.94);
+}
+.modal.center .msh{border-radius:18px;max-width:440px;width:94%;animation:scaleIn .25s cubic-bezier(.25,.46,.45,.94)}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.92) translateY(16px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.mt{color:var(--navy);font-weight:800;font-size:17px;margin-bottom:3px;letter-spacing:-.2px}
+.msub{color:var(--mu);font-size:13px;margin-bottom:16px;font-weight:500}
+.msh::before{content:'';display:block;width:40px;height:4px;background:#dde4f0;border-radius:3px;margin:0 auto 18px}
+.modal.center .msh::before{display:none}
+#cd-info div{padding:5px 0;border-bottom:1px solid #f1f5fb;display:flex;align-items:flex-start;gap:8px}
+#cd-info div:last-child{border-bottom:none}
+#cd-info span{min-width:92px;font-size:11px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.3px;flex-shrink:0;padding-top:2px}
+#cd-info strong{font-size:13px;color:var(--txt);font-weight:600}
+
+/* ══════════ HIGHLIGHT ══════════ */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hl td{background:#fef9c3 !important;animation:pulse 1s 3}
+
+/* ══════════ TOAST ══════════ */
+#toast{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  border-radius:50px;padding:11px 24px;font-size:13px;font-weight:700;z-index:900;
+  white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis;
+  display:none;color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.25);
+  animation:toastIn .22s ease-out;letter-spacing:.1px;
+}
+@keyframes toastIn{from{transform:translateX(-50%) translateY(12px);opacity:0}to{transform:translateX(-50%) translateY(0);opacity:1}}
+
+/* ══════════ SECTION VARIANTS ══════════ */
+.bk-sec{border-color:rgba(124,58,237,.25)!important;background:linear-gradient(135deg,#faf5ff,#fff)!important}
+.bk-sec h3{color:#7c3aed}
+.dz-sec{border-color:rgba(220,38,38,.25)!important;background:linear-gradient(135deg,#fef2f2,#fff)!important}
+.dz-sec h3{color:var(--dan)}
+.up-sec{border-color:rgba(217,119,6,.25)!important;background:linear-gradient(135deg,#fffbeb,#fff)!important}
+.up-sec h3{color:var(--ambh)}
+
+/* ══════════ MAPPING ══════════ */
+.maprow{display:flex;gap:9px;align-items:center;margin-bottom:8px}
+.maprow label{width:108px;flex:none;font-size:12px;color:var(--mu);font-weight:600}
+.maprow label b{color:var(--dan)}
+.maprow select{flex:1;margin-top:0;padding:9px 11px;font-size:13px}
+.prev{border:1px solid var(--bdr);border-radius:10px;overflow:auto;max-height:150px;margin-top:8px}
+.prev table{min-width:0;font-size:11px}
+.prev th,.prev td{padding:5px 9px;white-space:nowrap}
+.prog{height:9px;border-radius:6px;background:#e2e8f0;overflow:hidden;margin-top:12px;display:none}
+.prog i{display:block;height:100%;background:linear-gradient(90deg,var(--p),var(--navy-3));width:0;transition:width .2s}
+
+/* ══════════ TOGGLE (translate tab) ══════════ */
+.jo-row{display:flex;gap:10px;margin-top:6px}
+.jo-btn{flex:1;padding:14px 10px;border:2px solid;border-radius:12px;font-size:14px;font-weight:800;
+  cursor:pointer;background:#fff;transition:var(--transition);font-family:inherit}
+.jo-btn.t{border-color:var(--p);color:var(--p)}
+.jo-btn.t.on{background:var(--p);color:#fff;box-shadow:0 3px 12px rgba(30,64,175,.3)}
+.jo-btn.s{border-color:#7c3aed;color:#7c3aed}
+.jo-btn.s.on{background:#7c3aed;color:#fff;box-shadow:0 3px 12px rgba(124,58,237,.3)}
+.pvbox{background:#f8fafc;border:1.5px solid var(--bdr);border-radius:12px;padding:13px 15px;margin-top:12px;font-size:14px;line-height:1.7;min-height:52px}
+.pvbox b{color:var(--mu);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<div id="app-hdr">
+  <div id="app-hdr-title">
+    ⚖️ Charge Verify · 📂 CIS vs Physical
+    <span id="stDot" title="Storage"></span>
+  </div>
+  <div id="tab-bar">
+    <button class="tab-btn on" onclick="switchTab('cv')">⚖️ Verification</button>
+    <button class="tab-btn" onclick="switchTab('st')">⚙️ Settings</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     TAB 1 — VERIFICATION
+════════════════════════════════════════ -->
+<div class="tab-c on" id="cv-tab">
+<div class="cnt">
+
+  <!-- Dashboard -->
+  <div class="dash">
+    <div class="card">📁 CIS<br><span id="totalCount">0</span></div>
+    <div class="card" id="vCard">✅ Verified<br><span id="verifiedCount" style="color:#15803d">0</span></div>
+    <div class="card" id="pCard">⏳ Pending<br><span id="pendingCount" style="color:#b45309">0</span></div>
+    <div class="card" id="eCard" onclick="setFilter('extra')" style="cursor:pointer">➕ New<br><span id="extraCount" style="color:#b91c1c">0</span></div>
+  </div>
+
+  <!-- Verification -->
+  <div class="sec" id="verifySec">
+    <h3>✅ Verification</h3>
+    <div class="dwrap">
+      <input type="text" id="manualCaseInput" placeholder="Computer No. / Case No. / Party..." autocomplete="off"
+        oninput="onManualInput()" onkeydown="onManualKeyDown(event)">
+      <div id="caseDD"></div>
+    </div>
+    <button class="btn btn-s" onclick="manualAction('VERIFY')">✅ VERIFIED</button>
+    <div id="manualStatus" class="smsg"></div>
+    <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
+      Excel list se suggestions — case no, party, PS, dhara. Verified dabate hi us case par pahuncha denge.
+    </div>
+  </div>
+
+  <!-- Search & Filter -->
+  <div class="sec">
+    <h3>🔍 Search &amp; Filter</h3>
+    <input type="text" id="searchBox" placeholder="Computer No, Case No, Party, PS, Section...">
+    <div class="ftabs">
+      <button class="ftab ft-all" id="tab-all" onclick="setFilter('all')">🗂️ All<span class="tc" id="tabAllCount">0</span></button>
+      <button class="ftab" id="tab-pending" onclick="setFilter('pending')">⏳ Pending<span class="tc" id="tabPendCount">0</span></button>
+      <button class="ftab" id="tab-verified" onclick="setFilter('verified')">✅ Verified<span class="tc" id="tabVerCount">0</span></button>
+      <button class="ftab" id="tab-extra" onclick="setFilter('extra')">➕ New<span class="tc" id="tabExtCount">0</span></button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="twrap"><table id="cvTable"></table></div>
+  <div id="moreWrap"><button class="btn btn-g btn-sm" id="moreBtn" style="display:none" onclick="showMore()">⬇ Aur dikhao</button></div>
+  <div id="tblInfo"></div>
+
+</div>
+<!-- Floating -->
+<div class="flt" id="cvFlt">
+  <button class="btn btn-s" onclick="jumpVerify()">✅ Verification</button>
+</div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     TAB 2 — SETTINGS
+════════════════════════════════════════ -->
+<div class="tab-c" id="st-tab">
+<div class="cnt">
+
+  <!-- Court & charge date -->
+  <div class="sec">
+    <h3>📅 Court &amp; Charge Date</h3>
+    <input type="text" id="courtName" placeholder="Court — e.g. ACJM Court No. 15, Baghpat">
+    <div class="g2" style="margin-top:8px">
+      <input type="text" id="offName" placeholder="Officer name" style="margin-top:0">
+      <input type="date" id="chargeDate" style="margin-top:0">
+    </div>
+  </div>
+
+  <!-- Progress & Storage -->
+  <div class="sec">
+    <h3>📊 Progress &amp; Storage</h3>
+    <div class="dash" style="margin-bottom:0">
+      <div class="card" style="grid-column:span 2">
+        📊 Progress<br><span id="pctText" style="font-size:22px">0%</span>
+        <div class="pbar"><i id="pbar"></i></div>
+      </div>
+      <div class="card" style="grid-column:span 2">💾 Storage<br><span id="storageUsage" style="font-size:12px;color:var(--mu)">...</span></div>
+    </div>
+    <div style="color:var(--mu);font-size:11.5px;margin-top:12px;font-weight:500">
+      Progress = CIS list ki kitni files physically mil gayi.
+    </div>
+  </div>
+
+  <!-- Excel Upload -->
+  <div class="sec up-sec">
+    <h3>📥 CIS Excel Upload</h3>
+    <input type="file" id="excelFile" accept=".xlsx,.xls,.ods,.csv">
+    <div id="mapBox" style="display:none;margin-top:12px">
+      <label class="fl">Sheet</label><select id="imSheet"></select>
+      <label class="fl">Header row</label><select id="imHead"></select>
+      <div class="prev" id="imPrev"></div>
+      <label class="fl" style="margin-bottom:8px">Column mapping</label>
+      <div id="imMap"></div>
+      <div class="prog" id="imProgWrap"><i id="imProg"></i></div>
+    </div>
+    <button class="btn btn-a" id="upBtn" onclick="uploadExcel()">📤 Upload Excel</button>
+    <div id="upStatus" class="smsg"></div>
+    <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">20,000 cases tak — computer number se verification hoti hai</div>
+  </div>
+
+  <!-- New Entry -->
+  <div class="sec">
+    <h3>➕ New Entry — Excel list mein nahi</h3>
+    <div style="color:var(--mu);font-size:12.5px;font-weight:500;line-height:1.7">
+      Jo pathrawali physically mil gayi par CIS Excel list mein hai hi nahi — wo yahan add karo. Ye "New" mein count hoti hai.
+    </div>
+    <button class="btn" onclick="openNewEntry({comp:''})">➕ Naya Case Add Karo</button>
+  </div>
+
+  <!-- Translate -->
+  <div class="sec">
+    <h3>🔤 Translate &amp; Short Form</h3>
+    <div class="jo-row">
+      <button class="jo-btn t" id="trBtn" onclick="toggleTS('tr')">🔤 Translate</button>
+      <button class="jo-btn s" id="sfBtn" onclick="toggleTS('sf')">✂️ Short Form</button>
+    </div>
+    <div style="color:var(--mu);font-size:11.5px;margin-top:10px;font-weight:500">
+      Dono alag-alag on/off. Table, suggestions aur Excel download — sab par lagte hain.
+    </div>
+    <label class="fl">Test karo</label>
+    <textarea id="trIn" placeholder="State Vs Rajesh Kumar, PS Baraut u/s 279/338 IPC" oninput="runPreview()"></textarea>
+    <div class="pvbox" id="trOut"><b>Result</b><span>—</span></div>
+    <div class="g2">
+      <button class="btn btn-g" onclick="copyOut()">📋 Copy</button>
+      <button class="btn btn-g" onclick="document.getElementById('trIn').value='';runPreview()">✕ Clear</button>
+    </div>
+    <label class="fl">Apne shabd — Translate (from=to)</label>
+    <textarea id="dictTr" placeholder="Baghpat=बागपत&#10;Complainant=परिवादी"></textarea>
+    <label class="fl">Apne shabd — Short Form (from=to)</label>
+    <textarea id="dictSf" placeholder="परक्राम्य लिखत अधिनियम=पर.लि.अ."></textarea>
+    <button class="btn" onclick="saveDicts()">💾 Dictionary Save Karo</button>
+    <div id="dictStatus" class="smsg"></div>
+    <div style="font-size:11.5px;color:var(--mu);line-height:1.8;font-weight:500;margin-top:12px">
+      <b style="color:var(--txt)">Built-in Translate:</b> State Vs → राज्य बनाम · PS → थाना · u/s → धारा · IPC → भारतीय दंड संहिता · MV Act → मोटर यान अधिनियम · Baghpat ke thane · naam Devanagari mein<br>
+      <b style="color:var(--txt)">Built-in Short Form:</b> भारतीय दंड संहिता → भा.द.सं. · दंड प्रक्रिया संहिता → द.प्र.सं. · मोटर यान अधिनियम → म.या.अ. · उत्तर प्रदेश → उ.प्र. · थाना → था.
+    </div>
+  </div>
+
+  <!-- Download & Backup -->
+  <div class="sec bk-sec">
+    <h3>🗄️ Download &amp; Backup</h3>
+    <button class="btn btn-s" onclick="downloadExcel()" style="margin-top:0">📊 Download Excel</button>
+    <div class="g2">
+      <button class="btn btn-pu" onclick="exportBackup()">⬇️ Backup Export</button>
+      <button class="btn btn-opu" onclick="document.getElementById('restoreFile').click()">⬆️ Restore</button>
+    </div>
+    <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="importBackup(event)">
+    <div id="backupStatus" class="smsg"></div>
+    <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
+      Excel mein Summary + All + Pending + Verified + New Entry — verify date ke saath.
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ═══════════ NEW ENTRY MODAL ═══════════ -->
+<div class="modal" id="neModal">
+  <div class="msh">
+    <div class="mt" id="ne-title">➕ New Entry</div>
+    <div class="msub">Jo case Excel list mein nahi hai — naya add karo ("New" mein count hoga)</div>
+    <div class="g2" style="margin-top:0">
+      <div><label class="fl" style="margin-top:0">Computer No. *</label><input type="text" id="ne-comp" inputmode="numeric" autocomplete="off"></div>
+      <div><label class="fl" style="margin-top:0">Case No.</label><input type="text" id="ne-case" autocomplete="off"></div>
+    </div>
+    <label class="fl">Party Name</label><input type="text" id="ne-party" autocomplete="off">
+    <div class="g2">
+      <div><label class="fl" style="margin-top:0">PS / थाना</label><input type="text" id="ne-ps" autocomplete="off"></div>
+      <div><label class="fl" style="margin-top:0">Section / धारा</label><input type="text" id="ne-sec" autocomplete="off"></div>
+    </div>
+    <label class="fl">Remark</label><input type="text" id="ne-rem" autocomplete="off" placeholder="e.g. file cover phata hai">
+    <input type="hidden" id="ne-id">
+    <div class="g2" style="margin-top:14px">
+      <button class="btn btn-s" style="margin-top:0" onclick="saveNewEntry(false)">✓ Save</button>
+      <button class="btn btn-a" style="margin-top:0" onclick="saveNewEntry(true)">✓ Save + Next</button>
+    </div>
+    <button class="btn btn-g" onclick="closeNE()">✕ Band Karo</button>
+  </div>
+</div>
+
+<!-- ═══════════ CASE DETAIL MODAL ═══════════ -->
+<div class="modal center" id="caseDetailModal">
+  <div class="msh">
+    <div class="mt" id="cd-title">📁 Case Details</div>
+    <div class="msub" id="cd-sub"></div>
+    <div id="cd-info" style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px;font-size:13px"></div>
+    <label class="fl" style="margin-top:0">Remark</label>
+    <input type="text" id="cd-rem" placeholder="Remark...">
+    <div id="cd-btns" style="display:flex;flex-direction:column;gap:8px;margin-top:14px"></div>
+    <button class="btn btn-g" onclick="closeCaseDetail()">✕ Band Karo</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+<script>
+// ════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════
+const $=id=>document.getElementById(id);
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function rxEsc(s){return s.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+function sId(id){return String(id||"").replace(/[^a-zA-Z0-9-_]/g,'_');}
+function p2(n){return String(n).padStart(2,'0');}
+function fmtD(iso){if(!iso)return"";const d=new Date(iso);return p2(d.getDate())+"-"+p2(d.getMonth()+1)+"-"+d.getFullYear();}
+function fmtDT(iso){if(!iso)return"";const d=new Date(iso);return fmtD(iso)+" "+p2(d.getHours())+":"+p2(d.getMinutes());}
+function nKey(s){return String(s==null?'':s).toUpperCase().replace(/[^A-Z0-9]/g,'');}
+function dKey(s){return String(s==null?'':s).replace(/\D/g,'').replace(/^0+/,'');}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+let toastT;
+function showToast(msg,type){
+  const t=$('toast');
+  t.textContent=msg;t.style.background=type==='w'?'#d97706':type==='d'?'#dc2626':'#16a34a';
+  t.style.display='block';clearTimeout(toastT);toastT=setTimeout(()=>t.style.display='none',2800);
+}
+function speak(msg,lang){
+  try{
+    if(window.Android&&Android.speak){Android.speak(msg,lang||'en-IN');return;}
+    const u=new SpeechSynthesisUtterance(msg);u.lang=lang||'en-IN';u.rate=1;
+    speechSynthesis.cancel();speechSynthesis.speak(u);
+  }catch(e){}
+}
+function haptic(){try{navigator.vibrate&&navigator.vibrate(35);}catch(e){}}
+
+// ════════════════════════════════════════
+// IndexedDB
+// ════════════════════════════════════════
+const DB_NAME='ChargeVerifyDB', DB_VER=1, SC='cases', SM='metadata';
+let db=null, memMode=false;
+function openDB(){
+  return new Promise(res=>{
+    let done=false;const fin=v=>{if(!done){done=true;res(v);}};
+    try{
+      if(!window.indexedDB)return fin(false);
+      const r=indexedDB.open(DB_NAME,DB_VER);
+      r.onupgradeneeded=e=>{
+        const d=e.target.result;
+        if(!d.objectStoreNames.contains(SC))d.createObjectStore(SC,{keyPath:'id'});
+        if(!d.objectStoreNames.contains(SM))d.createObjectStore(SM,{keyPath:'key'});
+      };
+      r.onsuccess=e=>{db=e.target.result;fin(true);};
+      r.onerror=()=>fin(false);r.onblocked=()=>fin(false);
+      setTimeout(()=>fin(!!db),3500);
+    }catch(e){fin(false);}
+  });
+}
+function idbTx(store,mode,fn){
+  return new Promise((res,rej)=>{
+    if(!db){res(null);return;}
+    let tx,s,r;
+    try{tx=db.transaction(store,mode);s=tx.objectStore(store);r=fn(s);}catch(e){res(null);return;}
+    r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);
+  });
+}
+const idbAll =()=>idbTx(SC,'readonly',s=>s.getAll()).then(r=>r||[]);
+const idbPut =o=>idbTx(SC,'readwrite',s=>s.put(o));
+const idbDel =id=>idbTx(SC,'readwrite',s=>s.delete(id));
+const idbClr =()=>idbTx(SC,'readwrite',s=>s.clear());
+const idbGM  =k=>idbTx(SM,'readonly',s=>s.get(k)).then(r=>r?r.value:null);
+const idbSM  =(k,v)=>idbTx(SM,'readwrite',s=>s.put({key:k,value:v}));
+function idbPutMany(arr,onProg){
+  return new Promise(async res=>{
+    if(!db||!arr.length)return res();
+    const CH=800;
+    for(let i=0;i<arr.length;i+=CH){
+      await new Promise(ok=>{
+        const tx=db.transaction(SC,'readwrite'),s=tx.objectStore(SC);
+        for(const c of arr.slice(i,i+CH))s.put(strip(c));
+        tx.oncomplete=ok;tx.onerror=ok;tx.onabort=ok;
+      });
+      if(onProg)onProg(Math.min(i+CH,arr.length));
+    }
+    res();
+  });
+}
+function strip(c){const o=Object.assign({},c);delete o.searchableText;return o;}
+
+// ════════════════════════════════════════
+// DICTIONARIES
+// ════════════════════════════════════════
+const DICT_TR={
+  'state of uttar pradesh':'उत्तर प्रदेश राज्य','state of u.p.':'उत्तर प्रदेश राज्य','uttar pradesh':'उत्तर प्रदेश',
+  'state':'राज्य','govt':'सरकार','government':'सरकार','union of india':'भारत संघ',
+  'versus':'बनाम','vs':'बनाम','v/s':'बनाम','vs.':'बनाम',
+  'police station':'थाना','p.s.':'थाना','ps':'थाना','thana':'थाना',
+  'under section':'धारा','u/s':'धारा','section':'धारा','sec':'धारा','read with':'सहपठित','r/w':'सहपठित',
+  'and others':'आदि','& ors':'आदि','ors':'आदि','and another':'व अन्य','& anr':'व अन्य','anr':'व अन्य',
+  'others':'आदि','unknown':'अज्ञात',
+  'smt':'श्रीमती','smt.':'श्रीमती','mrs':'श्रीमती','mr':'श्री','shri':'श्री','sh.':'श्री','km':'कुमारी','mohd':'मो.',
+  'indian penal code':'भारतीय दंड संहिता','ipc':'भारतीय दंड संहिता',
+  'bharatiya nyaya sanhita':'भारतीय न्याय संहिता','bns':'भारतीय न्याय संहिता',
+  'criminal procedure code':'दंड प्रक्रिया संहिता','code of criminal procedure':'दंड प्रक्रिया संहिता',
+  'crpc':'दंड प्रक्रिया संहिता','cr.p.c.':'दंड प्रक्रिया संहिता','bnss':'भारतीय नागरिक सुरक्षा संहिता',
+  'motor vehicles act':'मोटर यान अधिनियम','mv act':'मोटर यान अधिनियम',
+  'negotiable instruments act':'परक्राम्य लिखत अधिनियम','ni act':'परक्राम्य लिखत अधिनियम',
+  'arms act':'आयुध अधिनियम','excise act':'आबकारी अधिनियम','electricity act':'विद्युत अधिनियम',
+  'gangster act':'गैंगस्टर अधिनियम','ndps':'स्वापक औषधि अधिनियम','pocso':'पॉक्सो अधिनियम',
+  'juvenile justice':'किशोर न्याय','domestic violence':'घरेलू हिंसा','act':'अधिनियम','rules':'नियमावली',
+  'criminal case':'आपराधिक वाद','sessions trial':'सत्र परीक्षण','complaint case':'परिवाद','complaint':'परिवाद',
+  'civil':'सिविल','revision':'निगरानी','appeal':'अपील','bail':'जमानत','misc':'विविध','miscellaneous':'विविध',
+  'execution':'निष्पादन','warrant':'वारंट','summon':'समन','case':'वाद','court':'न्यायालय','accused':'अभियुक्त',
+  'applicant':'प्रार्थी','complainant':'परिवादी','plaintiff':'वादी','defendant':'प्रतिवादी','petitioner':'याची',
+  'evidence':'साक्ष्य','prosecution evidence':'अभियोजन साक्ष्य','defence evidence':'बचाव साक्ष्य',
+  'cross examination':'प्रतिपरीक्षा','argument':'बहस','arguments':'बहस','charge':'आरोप','framing of charge':'आरोप विरचन',
+  'judgment':'निर्णय','judgement':'निर्णय','order':'आदेश','appearance':'उपस्थिति','hearing':'सुनवाई',
+  'final':'अंतिम','disposal':'निस्तारण','disposed':'निस्तारित','pending':'लंबित','stage':'चरण',
+  'january':'जनवरी','february':'फरवरी','march':'मार्च','april':'अप्रैल','may':'मई','june':'जून','july':'जुलाई',
+  'august':'अगस्त','september':'सितंबर','october':'अक्टूबर','november':'नवंबर','december':'दिसंबर',
+  'baghpat':'बागपत','baraut':'बड़ौत','binauli':'बिनौली','chhaprauli':'छपरौली','doghat':'दोघट','khekada':'खेकड़ा',
+  'khekra':'खेकड़ा','ramala':'रमाला','singhawali ahir':'सिंघावली अहीर','balaini':'बालैनी','tatiri':'टटीरी',
+  'chandinagar':'चांदीनगर','badagaon':'बड़ागांव','meerut':'मेरठ','delhi':'दिल्ली','saharanpur':'सहारनपुर',
+  'muzaffarnagar':'मुजफ्फरनगर','shamli':'शामली','ghaziabad':'गाजियाबाद','bulandshahr':'बुलंदशहर','hapur':'हापुड़'
+};
+const DICT_SF={
+  'भारतीय दंड संहिता':'भा.द.सं.','भारतीय न्याय संहिता':'भा.न्या.सं.','दंड प्रक्रिया संहिता':'द.प्र.सं.',
+  'भारतीय नागरिक सुरक्षा संहिता':'भा.ना.सु.सं.','मोटर यान अधिनियम':'म.या.अ.','परक्राम्य लिखत अधिनियम':'पर.लि.अ.',
+  'आयुध अधिनियम':'आ.अ.','आबकारी अधिनियम':'आब.अ.','विद्युत अधिनियम':'वि.अ.','गैंगस्टर अधिनियम':'गैंग.अ.',
+  'स्वापक औषधि अधिनियम':'स्वा.औ.अ.','किशोर न्याय':'कि.न्या.','घरेलू हिंसा':'घ.हिं.','उत्तर प्रदेश':'उ.प्र.',
+  'अधिनियम':'अधि.','संहिता':'सं.','धारा':'धा.','थाना':'था.','श्रीमती':'श्रीम.','कुमारी':'कु.',
+  'अभियोजन साक्ष्य':'अभि.सा.','आरोप विरचन':'आरोप वि.','प्रतिपरीक्षा':'प्रति.','आपराधिक वाद':'आ.वा.',
+  'सत्र परीक्षण':'स.प.','निस्तारित':'निस्त.',
+  'indian penal code':'IPC','bharatiya nyaya sanhita':'BNS','criminal procedure code':'CrPC',
+  'code of criminal procedure':'CrPC','motor vehicles act':'MV Act','negotiable instruments act':'NI Act',
+  'police station':'PS','under section':'u/s','uttar pradesh':'UP','and others':'& ors',
+  'sessions trial':'ST','criminal case':'CC','versus':'Vs','government':'Govt'
+};
+const TL_EXC={
+  singh:'सिंह',kumar:'कुमार',kumari:'कुमारी',devi:'देवी',rani:'रानी',wati:'वती',bai:'बाई',lal:'लाल',
+  ram:'राम',shyam:'श्याम',mohan:'मोहन',sohan:'सोहन',ramesh:'रमेश',suresh:'सुरेश',dinesh:'दिनेश',
+  rajesh:'राजेश',mahesh:'महेश',naresh:'नरेश',mukesh:'मुकेश',rakesh:'राकेश',satish:'सतीश',
+  anil:'अनिल',sunil:'सुनील',vinod:'विनोद',pramod:'प्रमोद',ashok:'अशोक',arun:'अरुण',varun:'वरुण',
+  amit:'अमित',sumit:'सुमित',rohit:'रोहित',mohit:'मोहित',sachin:'सचिन',deepak:'दीपक',dipak:'दीपक',
+  sanjay:'संजय',vijay:'विजय',ajay:'अजय',ravi:'रवि',manoj:'मनोज',pankaj:'पंकज',neeraj:'नीरज',
+  dharmendra:'धर्मेंद्र',jitendra:'जितेंद्र',virendra:'वीरेंद्र',surendra:'सुरेंद्र',narendra:'नरेंद्र',
+  mahendra:'महेंद्र',rajendra:'राजेंद्र',upendra:'उपेंद्र',devendra:'देवेंद्र',yogendra:'योगेंद्र',
+  om:'ओम',prakash:'प्रकाश',kailash:'कैलाश',subhash:'सुभाष',vikas:'विकास',vikash:'विकास',akash:'आकाश',
+  krishna:'कृष्ण',gopal:'गोपाल',hari:'हरि',shiv:'शिव',bhagwan:'भगवान',prasad:'प्रसाद',chand:'चंद',
+  nath:'नाथ',pratap:'प्रताप',veer:'वीर',dev:'देव',raj:'राज',pal:'पाल',saini:'सैनी',
+  sharma:'शर्मा',verma:'वर्मा',yadav:'यादव',tyagi:'त्यागी',chaudhary:'चौधरी',chaudhari:'चौधरी',
+  choudhary:'चौधरी',chauhan:'चौहान',tomar:'तोमर',rana:'राणा',rathi:'राठी',malik:'मलिक',jain:'जैन',
+  gupta:'गुप्ता',agarwal:'अग्रवाल',bansal:'बंसल',mittal:'मित्तल',goyal:'गोयल',khan:'खान',ahmad:'अहमद',
+  ahmed:'अहमद',ali:'अली',hussain:'हुसैन',hasan:'हसन',rashid:'राशिद',salim:'सलीम',nasir:'नासिर',
+  irfan:'इरफान',arshad:'अरशद',aslam:'असलम',akram:'अकरम',imran:'इमरान',sabir:'साबिर',
+  babu:'बाबू',bhai:'भाई',mange:'मांगे',jai:'जय',karan:'करण',arjun:'अर्जुन',bharat:'भरत',
+  ompal:'ओमपाल',satpal:'सतपाल',jaipal:'जयपाल',ranpal:'रणपाल'
+};
+const TL_VOW={aa:'आ',ai:'ऐ',au:'औ',ee:'ई',ii:'ई',oo:'ऊ',uu:'ऊ',ri:'ऋ',a:'अ',i:'इ',u:'उ',e:'ए',o:'ओ'};
+const TL_MAT={aa:'ा',ai:'ै',au:'ौ',ee:'ी',ii:'ी',oo:'ू',uu:'ू',ri:'ृ',a:'',i:'ि',u:'ु',e:'े',o:'ो'};
+const TL_CON={chh:'छ',shh:'ष',ksh:'क्ष',kh:'ख',gh:'घ',ch:'च',jh:'झ',th:'थ',dh:'ध',ph:'फ',bh:'भ',sh:'श',
+  gy:'ज्ञ',ng:'ंग',ny:'ञ',k:'क',g:'ग',c:'क',j:'ज',t:'त',d:'द',n:'न',p:'प',f:'फ',b:'ब',
+  m:'म',y:'य',r:'र',l:'ल',v:'व',w:'व',s:'स',h:'ह',x:'क्स',z:'ज़',q:'क'};
+function translitWord(w){
+  const lw=w.toLowerCase();
+  if(TL_EXC[lw])return TL_EXC[lw];
+  if(lw.length<2)return w;
+  let out='',i=0,prevCon=false;
+  const take=(obj,max)=>{for(let L=max;L>=1;L--){const p=lw.substr(i,L);if(obj[p]!==undefined)return[p,obj[p]];}return null;};
+  while(i<lw.length){
+    const c=take(TL_CON,3);
+    if(c){
+      out+=c[1];i+=c[0].length;
+      const v=take(TL_VOW,2);
+      if(v){i+=v[0].length;out+=(v[0]==='a'&&i>=lw.length)?'\u093e':TL_MAT[v[0]];prevCon=false;}
+      else if(i<lw.length){out+='\u094d';prevCon=true;}
+      else prevCon=true;
+      continue;
+    }
+    const v=take(TL_VOW,2);
+    if(v){out+=(out===''||!prevCon)?TL_VOW[v[0]]:TL_MAT[v[0]];i+=v[0].length;prevCon=false;continue;}
+    out+=lw[i];i++;
+  }
+  return out;
+}
+function parseCustom(txt){
+  const o={};
+  String(txt||'').split(/\n+/).forEach(l=>{const i=l.indexOf('=');if(i>0){const k=l.slice(0,i).trim(),v=l.slice(i+1).trim();if(k)o[k.toLowerCase()]=v;}});
+  return o;
+}
+let RX_TR=null,MP_TR=null,RX_SF=null,MP_SF=null;
+function buildRx(base,custom){
+  const map=Object.assign({},base,custom);
+  const keys=Object.keys(map).sort((a,b)=>b.length-a.length);
+  if(!keys.length)return[null,map];
+  const parts=keys.map(k=>{
+    const e=rxEsc(k);
+    if(!/^[\x00-\x7F]+$/.test(k))return e;
+    return (/^\w/.test(k)?'\\b':'')+e+(/\w$/.test(k)?'\\b':'');
+  });
+  return[new RegExp(parts.join('|'),'gi'),map];
+}
+function rebuildDicts(){
+  const r1=buildRx(DICT_TR,parseCustom(META.dictTr));RX_TR=r1[0];MP_TR=r1[1];
+  const r2=buildRx(DICT_SF,parseCustom(META.dictSf));RX_SF=r2[0];MP_SF=r2[1];
+}
+function doTr(s){
+  if(!s)return s;
+  let x=RX_TR?s.replace(RX_TR,m=>MP_TR[m.toLowerCase()]!==undefined?MP_TR[m.toLowerCase()]:m):s;
+  return x.replace(/[A-Za-z]{2,}/g,w=>translitWord(w));
+}
+function doSf(s){
+  if(!s)return s;
+  return RX_SF?s.replace(RX_SF,m=>MP_SF[m.toLowerCase()]!==undefined?MP_SF[m.toLowerCase()]:m):s;
+}
+function T(s){
+  if(s==null||s==='')return'';
+  let x=String(s);
+  if(META.tr)x=doTr(x);
+  if(META.sf)x=doSf(x);
+  return x;
+}
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let cData=[], aFilter='all', shown=0, PAGE=150, ddIdx=-1, ddList=[];
+let byComp=new Map(), byDig=new Map();
+let META={court:'',off:'',date:'',tr:0,sf:0,dictTr:'',dictSf:''};
+const rTimers={};
+function gSrch(r){return[r.comp,r.caseno,r.partyname,r.section,r.ps,r.remark].join(' ').toLowerCase();}
+function reindex(){
+  byComp.clear();byDig.clear();
+  cData.sort((a,b)=>{
+    const x=parseInt(dKey(a.comp)||'0',10),y=parseInt(dKey(b.comp)||'0',10);
+    return x!==y?x-y:String(a.comp).localeCompare(String(b.comp));
+  });
+  cData.forEach(c=>{
+    const k=nKey(c.comp);if(k&&!byComp.has(k))byComp.set(k,c);
+    const d=dKey(c.comp);if(d&&!byDig.has(d))byDig.set(d,c);
+    if(!c.searchableText)c.searchableText=gSrch(c);
+  });
+}
+function findByNo(v){
+  const k=nKey(v);if(!k)return null;
+  return byComp.get(k)||byDig.get(dKey(v))||null;
+}
+function kindOf(c){return c.src==='manual'?'extra':(c.verified?'verified':'pending');}
+async function saveMeta(){await idbSM('meta',META);}
+
+// ════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════
+function updateDash(){
+  let v=0,p=0,e=0;
+  cData.forEach(c=>{const k=kindOf(c);if(k==='verified')v++;else if(k==='pending')p++;else e++;});
+  const cis=v+p;
+  $('totalCount').textContent=cis;
+  $('verifiedCount').textContent=v;
+  $('pendingCount').textContent=p;
+  $('extraCount').textContent=e;
+  $('tabAllCount').textContent=cData.length;
+  $('tabPendCount').textContent=p;
+  $('tabVerCount').textContent=v;
+  $('tabExtCount').textContent=e;
+  const pct=cis?Math.round(v*100/cis):0;
+  $('pctText').textContent=pct+'%';
+  $('pbar').style.width=pct+'%';
+  const ec=$('eCard');
+  if(ec){ec.style.borderColor=e>0?'#fca5a5':'rgba(221,228,240,.7)';ec.style.background=e>0?'#fff5f5':'var(--sur)';}
+}
+function setFilter(f){
+  aFilter=f;
+  const m={all:'ft-all',pending:'ft-pd',verified:'ft-vf',extra:'ft-ex'};
+  ['all','pending','verified','extra'].forEach(k=>{
+    const el=$('tab-'+k);if(el)el.className='ftab'+(k===f?' '+m[k]:'');
+  });
+  drawTable(getFiltered());
+}
+function getFiltered(){
+  let d=cData;
+  if(aFilter!=='all')d=d.filter(r=>kindOf(r)===aFilter);
+  const q=$('searchBox').value.trim().toLowerCase();
+  if(q)d=d.filter(r=>r.searchableText&&r.searchableText.includes(q));
+  return d;
+}
+
+// ════════════════════════════════════════
+// TABLE
+// ════════════════════════════════════════
+let viewData=[];
+function drawTable(data,keepShown){
+  viewData=data||[];
+  if(!keepShown)shown=Math.min(PAGE,viewData.length);
+  const tbl=$('cvTable');
+  if(!viewData.length){
+    tbl.innerHTML='';
+    $('moreBtn').style.display='none';
+    $('tblInfo').textContent=cData.length?'Koi record nahi mila':'Excel upload karke shuru karo';
+    return;
+  }
+  const L=["Sr","Computer No","Case No","Party Name","Section","PS","Status","Verify Date","Remark"];
+  let h="<tr>"+L.map(x=>"<th>"+x+"</th>").join("")+"</tr>";
+  for(let i=0;i<shown;i++){
+    const r=viewData[i];if(!r)break;
+    const k=kindOf(r);
+    const pill=k==='verified'?'<span class="pill pill-v">✓ Verified</span>'
+      :k==='pending'?'<span class="pill pill-p">⏳ Pending</span>'
+      :'<span class="pill pill-e">➕ New</span>';
+    const cj=String(r.comp).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const ra=String(r.remark||'').replace(/"/g,'&quot;');
+    h+='<tr id="row_'+sId(r.comp)+'">'
+      +'<td>'+esc(r.srno||(i+1))+'</td>'
+      +'<td><span class="cnoL" onclick="openCaseDetail(\''+cj+'\')">'+esc(r.comp)+'</span></td>'
+      +'<td>'+esc(r.caseno||'')+'</td>'
+      +'<td>'+esc(T(r.partyname))+'</td>'
+      +'<td>'+esc(T(r.section))+'</td>'
+      +'<td>'+esc(T(r.ps))+'</td>'
+      +'<td>'+pill+'</td>'
+      +'<td>'+(r.vdate?fmtDT(r.vdate):'')+'</td>'
+      +'<td><input data-comp="'+String(r.comp).replace(/"/g,'&quot;')+'" value="'+ra+'" oninput="updateRemark(\''+cj+'\',this.value)" placeholder="Remark..."></td>'
+      +'</tr>';
+  }
+  tbl.innerHTML=h;
+  $('moreBtn').style.display=shown<viewData.length?'inline-flex':'none';
+  $('tblInfo').textContent=Math.min(shown,viewData.length)+' / '+viewData.length+' records';
+}
+function showMore(){shown=Math.min(shown+PAGE,viewData.length);drawTable(viewData,true);}
+async function updateRemark(comp,val){
+  clearTimeout(rTimers[comp]);
+  rTimers[comp]=setTimeout(async()=>{
+    const c=findByNo(comp);
+    if(c){c.remark=val;c.searchableText=gSrch(c);await idbPut(strip(c));}
+    delete rTimers[comp];
+  },400);
+}
+function scrollToFile(comp){
+  const idx=viewData.findIndex(r=>String(r.comp)===String(comp));
+  if(idx===-1)return;
+  if(idx>=shown){shown=Math.min(idx+30,viewData.length);drawTable(viewData,true);}
+  const row=$('row_'+sId(comp));
+  if(!row)return;
+  row.scrollIntoView({behavior:'smooth',block:'center'});
+  row.classList.add('hl');setTimeout(()=>row.classList.remove('hl'),4000);
+}
+
+// ════════════════════════════════════════
+// MANUAL ENTRY (Computer No) + DROPDOWN
+// ════════════════════════════════════════
+function showMS(msg,type){
+  const el=$('manualStatus');
+  el.textContent=msg;el.className='smsg s-'+type;
+  clearTimeout(el._t);if(type==='ok')el._t=setTimeout(()=>el.className='smsg',3000);
+}
+function onManualInput(){
+  const v=$('manualCaseInput').value.trim();ddIdx=-1;
+  if(!v||!cData.length){closeDD();return;}
+  const q=v.toLowerCase(),d=dKey(v),k=nKey(v);
+  const ex=findByNo(v);
+  const A=[],B=[],C=[];
+  for(const c of cData){
+    if(c===ex)continue;
+    const cd=dKey(c.comp),ck=nKey(c.comp);
+    if((d&&cd===d)||(k&&ck===k))A.push(c);
+    else if((d&&cd.startsWith(d))||(k&&ck.startsWith(k)))B.push(c);
+    else if(c.searchableText.indexOf(q)>-1)C.push(c);
+    if(A.length+B.length+C.length>300)break;
+  }
+  ddList=(ex?[ex]:[]).concat(A,B,C).slice(0,20);
+  if(!ddList.length){closeDD();return;}
+  const dd=$('caseDD');
+  dd.innerHTML=ddList.map((r,i)=>{
+    const cj=String(r.comp).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const l1=[r.caseno,T(r.partyname)].filter(Boolean).join(' · ')||'—';
+    const l2=[T(r.ps),T(r.section)].filter(Boolean).join(' · ')||'—';
+    const tick=r.verified?' <span class="pill pill-v">✓</span>':r.src==='manual'?' <span class="pill pill-e">New</span>':'';
+    return '<div class="di" data-comp="'+String(r.comp).replace(/"/g,'&quot;')+'" onmousedown="selDD(\''+cj+'\')">'
+      +'<span class="di-no">'+esc(r.comp)+'</span>'
+      +'<span class="di-bd"><div class="di-cn">'+esc(l1)+tick+'</div><div class="di-pt">'+esc(l2)+'</div></span></div>';
+  }).join('');
+  dd.style.display='block';
+}
+function onManualKeyDown(e){
+  const dd=$('caseDD'),items=dd.querySelectorAll('.di');
+  if(e.key==='Enter'){
+    e.preventDefault();
+    if(ddIdx>=0&&items[ddIdx])selDD(items[ddIdx].dataset.comp);
+    else manualAction('VERIFY');
+    return;
+  }
+  if(!items.length)return;
+  if(e.key==='ArrowDown'){e.preventDefault();ddIdx=Math.min(ddIdx+1,items.length-1);updDDHL(items);}
+  else if(e.key==='ArrowUp'){e.preventDefault();ddIdx=Math.max(ddIdx-1,0);updDDHL(items);}
+  else if(e.key==='Escape')closeDD();
+}
+function updDDHL(items){items.forEach((el,i)=>{el.classList.toggle('act',i===ddIdx);if(i===ddIdx)el.scrollIntoView({block:'nearest'});});}
+function selDD(comp){
+  $('manualCaseInput').value=comp;closeDD();
+  manualAction('VERIFY');
+}
+function closeDD(){$('caseDD').style.display='none';ddIdx=-1;}
+document.addEventListener('click',e=>{if(!e.target.closest('.dwrap'))closeDD();});
+
+async function manualAction(mode){
+  const raw=$('manualCaseInput').value.trim();
+  if(!raw){showMS('⚠️ Computer No enter karo','err');$('manualCaseInput').focus();return;}
+  if(!cData.length){showMS('⚠️ Data nahi. Excel upload karo','err');return;}
+  const rec=findByNo(raw);
+  if(!rec){
+    showMS('❌ Not Found: '+raw+' — Excel list mein nahi. New Entry karna hai?','err');
+    _pendingNew=raw;
+    const el=$('manualStatus');
+    el.innerHTML=esc('❌ Not Found: '+raw)+'<br><button class="btn" style="margin-top:9px" onclick="openNewEntry({comp:\''+esc(raw).replace(/'/g,'')+'\'})">➕ New Entry banao</button>';
+    speak('Not found');haptic();
+    return;
+  }
+  if(rec.verified){
+    showMS('ℹ️ Already Verified: '+rec.comp+' ('+fmtDT(rec.vdate)+')','info');
+    speak('Already verified');
+    $('manualCaseInput').value='';closeDD();
+    if(aFilter!=='all'&&kindOf(rec)!==aFilter)setFilter('all');
+    else drawTable(getFiltered());
+    scrollToFile(rec.comp);
+    return;
+  }
+  rec.verified=1;rec.vdate=new Date().toISOString();
+  rec.searchableText=gSrch(rec);
+  await idbPut(strip(rec));
+  showMS('✅ VERIFIED: '+rec.comp+' — '+(T(rec.partyname)||rec.caseno||''),'ok');
+  speak('File verified');haptic();
+  $('manualCaseInput').value='';closeDD();
+  // agar filter us case ko chhupa raha hai to All par le aao, phir us row par jao
+  if(aFilter!=='all'&&kindOf(rec)!==aFilter)setFilter('all');
+  else drawTable(getFiltered());
+  updateDash();scrollToFile(rec.comp);
+}
+// Chipka hua button — seedha Verification bar par le jaata hai
+function jumpVerify(){
+  const sec=$('verifySec');
+  if(sec)sec.scrollIntoView({behavior:'smooth',block:'center'});
+  setTimeout(()=>{const i=$('manualCaseInput');if(i){i.focus();i.select();}},450);
+}
+
+// ════════════════════════════════════════
+// NEW ENTRY MODAL
+// ════════════════════════════════════════
+function openNewEntry(pre){
+  pre=pre&&pre.comp!==undefined?pre:{comp:($('manualCaseInput').value||'').trim()};
+  $('ne-title').textContent=pre.id?'✏️ Edit Entry':'➕ New Entry';
+  $('ne-id').value=pre.id||'';
+  $('ne-comp').value=pre.comp||'';$('ne-case').value=pre.caseno||'';
+  $('ne-party').value=pre.partyname||'';$('ne-ps').value=pre.ps||'';
+  $('ne-sec').value=pre.section||'';$('ne-rem').value=pre.remark||'';
+  $('neModal').classList.add('on');
+  setTimeout(()=>$('ne-comp').focus(),260);
+}
+function closeNE(){$('neModal').classList.remove('on');}
+$('neModal').addEventListener('click',function(e){if(e.target===this)closeNE();});
+
+async function saveNewEntry(again){
+  const comp=$('ne-comp').value.trim();
+  if(!comp){showToast('⚠️ Computer No zaroori hai','w');$('ne-comp').focus();return;}
+  const id=$('ne-id').value;
+  const f={comp,caseno:$('ne-case').value.trim(),partyname:$('ne-party').value.trim(),
+    ps:$('ne-ps').value.trim(),section:$('ne-sec').value.trim(),remark:$('ne-rem').value.trim()};
+  if(id){
+    const c=cData.find(x=>x.id===id);
+    if(c){Object.assign(c,f);c.searchableText=gSrch(c);await idbPut(strip(c));}
+    reindex();drawTable(getFiltered());updateDash();closeNE();
+    showToast('✅ Update ho gaya: '+comp);return;
+  }
+  const dup=findByNo(comp);
+  if(dup){
+    closeNE();showToast('ℹ️ '+comp+' pehle se list mein hai','w');
+    setTimeout(()=>openCaseDetail(dup.comp),300);return;
+  }
+  const c=Object.assign({id:uid(),src:'manual',verified:1,vdate:new Date().toISOString(),srno:''},f);
+  c.searchableText=gSrch(c);
+  cData.push(c);reindex();
+  await idbPut(strip(c));
+  drawTable(getFiltered());updateDash();
+  showToast('✅ New Entry add: '+comp);speak('New entry added');haptic();
+  if(again){openNewEntry({comp:''});}else closeNE();
+}
+
+// ════════════════════════════════════════
+// CASE DETAIL MODAL
+// ════════════════════════════════════════
+let _cdComp=null, _pendingNew='';
+function openCaseDetail(comp){
+  const r=findByNo(comp);if(!r)return;
+  _cdComp=r.comp;
+  const k=kindOf(r);
+  $('cd-title').textContent='📁 Computer No. '+r.comp;
+  $('cd-sub').textContent=T(r.partyname)||'';
+  const rows=[
+    ['Case No',r.caseno||'—'],['Party',T(r.partyname)||'—'],['Section',T(r.section)||'—'],['PS',T(r.ps)||'—'],
+    ['Source',r.src==='manual'?'➕ New Entry (Excel list mein nahi)':'📋 CIS Excel List'],
+    ['Status',k==='verified'?'✅ Verified':k==='pending'?'⏳ Pending':'➕ New Entry'],
+    ['Verify Date',r.vdate?fmtDT(r.vdate):'—']
+  ];
+  $('cd-info').innerHTML=rows.map(x=>'<div><span>'+x[0]+':</span> <strong>'+esc(String(x[1]))+'</strong></div>').join('');
+  $('cd-rem').value=r.remark||'';
+  let b='';
+  if(r.verified)b+='<button class="btn btn-d" style="margin-top:0" onclick="cdVerify(0)">↩ Verify Undo Karo</button>';
+  else b+='<button class="btn btn-s" style="margin-top:0" onclick="cdVerify(1)">✅ VERIFIED Mark Karo</button>';
+  b+='<button class="btn btn-g" style="margin-top:0" onclick="cdEdit()">✏️ Edit</button>';
+  if(r.src==='manual')b+='<button class="btn btn-d" style="margin-top:0" onclick="cdDel()">🗑 Entry Hatao</button>';
+  $('cd-btns').innerHTML=b;
+  $('caseDetailModal').classList.add('on');
+}
+function closeCaseDetail(){$('caseDetailModal').classList.remove('on');_cdComp=null;}
+$('caseDetailModal').addEventListener('click',function(e){if(e.target===this)closeCaseDetail();});
+async function cdVerify(on){
+  const r=findByNo(_cdComp);if(!r)return;
+  r.remark=$('cd-rem').value.trim();
+  r.verified=on?1:0;r.vdate=on?new Date().toISOString():'';
+  r.searchableText=gSrch(r);
+  await idbPut(strip(r));
+  const comp=r.comp;
+  closeCaseDetail();
+  drawTable(getFiltered());updateDash();scrollToFile(comp);
+  showToast(on?'✅ Verified: '+comp:'↩ Verify undo: '+comp,on?'':'w');
+  if(on){speak('File verified');haptic();}
+}
+function cdEdit(){
+  const r=findByNo(_cdComp);if(!r)return;
+  closeCaseDetail();openNewEntry(r);
+}
+async function cdDel(){
+  const r=findByNo(_cdComp);if(!r)return;
+  if(!confirm('Computer No. '+r.comp+' ki entry hatani hai?'))return;
+  cData=cData.filter(x=>x.id!==r.id);
+  await idbDel(r.id);reindex();
+  closeCaseDetail();drawTable(getFiltered());updateDash();
+  showToast('🗑 Hata diya: '+r.comp,'d');
+}
+
+// ════════════════════════════════════════
+// LAZY LIBS (local libs/ first, phir CDN)
+// ════════════════════════════════════════
+function loadLib(urls){
+  return new Promise((res,rej)=>{
+    let i=0;
+    const next=()=>{
+      if(i>=urls.length)return rej(new Error('lib'));
+      const s=document.createElement('script');s.src=urls[i++];
+      s.onload=()=>res();s.onerror=next;document.head.appendChild(s);
+    };next();
+  });
+}
+const needXLSX=()=>window.XLSX?Promise.resolve():loadLib(['libs/xlsx.full.min.js',
+  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js']);
+const needXJS=()=>window.ExcelJS?Promise.resolve():loadLib(['libs/exceljs.min.js',
+  'https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js']);
+
+// ════════════════════════════════════════
+// EXCEL UPLOAD
+// ════════════════════════════════════════
+const FIELDS=[
+  {k:'comp',l:'Computer No',req:1,kw:['computer','कंप्यूटर','कम्प्यूटर','कंप्युटर','comp no','compno','cno','कं.सं']},
+  {k:'caseno',l:'Case No',kw:['case no','case number','वाद संख्या','वाद सं','मुकदमा','केस न','reg no','registration','पंजीकरण','case']},
+  {k:'partyname',l:'Party Name',kw:['party','parties','पक्षकार','वादी','प्रतिवादी','title','शीर्षक','बनाम','petitioner','accused','अभियुक्त','name']},
+  {k:'ps',l:'PS / थाना',kw:['police station','p.s','थाना','ps','station']},
+  {k:'section',l:'Section / धारा',kw:['section','u/s','धारा','act','अधिनियम','offence','अपराध']},
+  {k:'remark',l:'Remark',kw:['stage','चरण','purpose','प्रयोजन','status','स्थिति','remark','टिप्पणी','note']},
+  {k:'srno',l:'Sr No',kw:['sr','क्रम','s.no','serial']}
+];
+let IMP=null;
+function guessCols(head){
+  const used=new Set(),out={};
+  const H=head.map(h=>String(h||'').toLowerCase().trim());
+  for(const f of FIELDS){
+    let best=-1;
+    for(const kw of f.kw){
+      for(let i=0;i<H.length;i++){
+        if(used.has(i)||!H[i])continue;
+        if(H[i].indexOf(kw)>-1){best=i;break;}
+      }
+      if(best>-1)break;
+    }
+    if(best>-1)used.add(best);
+    out[f.k]=best;
+  }
+  return out;
+}
+function upStatus(msg,type){
+  const el=$('upStatus');el.textContent=msg;el.className='smsg s-'+type;
+  clearTimeout(el._t);if(type==='ok')el._t=setTimeout(()=>el.className='smsg',4000);
+}
+$('excelFile').addEventListener('change',async e=>{
+  const file=e.target.files[0];if(!file)return;
+  upStatus('⏳ File padh rahe hain...','info');
+  try{
+    await needXLSX();
+    const buf=await file.arrayBuffer();
+    const wb=XLSX.read(new Uint8Array(buf),{type:'array',raw:false});
+    IMP={wb};
+    $('imSheet').innerHTML=wb.SheetNames.map(n=>'<option>'+esc(n)+'</option>').join('');
+    $('mapBox').style.display='block';
+    sheetChosen();
+    upStatus('✅ File ready — mapping check karke Upload dabao','ok');
+  }catch(err){
+    upStatus('❌ File nahi padhi ja saki. Offline ho to libs/xlsx.full.min.js saath rakho','err');
+  }
+});
+function sheetChosen(){
+  const ws=IMP.wb.Sheets[$('imSheet').value];
+  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:'',raw:false,blankrows:false});
+  IMP.rows=rows;
+  $('imHead').innerHTML=rows.slice(0,12).map((r,i)=>{
+    const t=r.filter(Boolean).slice(0,4).join(' | ').slice(0,55);
+    return '<option value="'+i+'">Row '+(i+1)+' — '+esc(t||'(khali)')+'</option>';
+  }).join('');
+  let hi=0;
+  for(let i=0;i<Math.min(rows.length,12);i++){if(rows[i].filter(x=>String(x).trim()).length>=3){hi=i;break;}}
+  $('imHead').value=hi;
+  headChosen();
+}
+function headChosen(){
+  const rows=IMP.rows,hi=+$('imHead').value,head=rows[hi]||[];
+  IMP.hi=hi;IMP.head=head;
+  const opts='<option value="-1">— none —</option>'+head.map((h,i)=>
+    '<option value="'+i+'">'+esc(String(h||'').trim()||('Col '+(i+1)))+'</option>').join('');
+  const g=guessCols(head);
+  $('imMap').innerHTML=FIELDS.map(f=>
+    '<div class="maprow"><label>'+f.l+(f.req?' <b>*</b>':'')+'</label><select data-fk="'+f.k+'">'+opts+'</select></div>').join('');
+  FIELDS.forEach(f=>{const s=document.querySelector('#imMap select[data-fk="'+f.k+'"]');if(s)s.value=g[f.k];});
+  const body=rows.slice(hi+1,hi+4);
+  $('imPrev').innerHTML='<table><tr>'+head.map(h=>'<th>'+esc(String(h||'').slice(0,20))+'</th>').join('')+'</tr>'
+    +body.map(r=>'<tr>'+head.map((_,i)=>'<td>'+esc(String(r[i]||'').slice(0,24))+'</td>').join('')+'</tr>').join('')+'</table>';
+}
+$('imSheet').addEventListener('change',sheetChosen);
+$('imHead').addEventListener('change',headChosen);
+
+async function uploadExcel(){
+  if(!IMP||!IMP.rows){showToast('⚠️ Pehle file select karo','w');return;}
+  const map={};document.querySelectorAll('#imMap select').forEach(s=>map[s.dataset.fk]=+s.value);
+  if(map.comp<0){upStatus('⚠️ Computer No wala column choose karo','err');return;}
+  const btn=$('upBtn');btn.disabled=true;btn.textContent='⏳ Uploading...';
+  $('imProgWrap').style.display='block';
+  const replace=cData.length?confirm('Purana data hata kar naya lagayein?\n\nOK = purana hatega\nCancel = naye cases jud jayenge'):false;
+  if(replace){cData=[];await idbClr();byComp.clear();byDig.clear();}
+  const seen=new Set(cData.map(c=>nKey(c.comp)));
+  const rows=IMP.rows.slice(IMP.hi+1);
+  const val=(r,i)=>i<0?'':String(r[i]==null?'':r[i]).replace(/\s+/g,' ').trim();
+  const fresh=[];let dup=0,cut=0;
+  for(const r of rows){
+    const comp=val(r,map.comp);
+    if(!comp)continue;
+    if(cData.length+fresh.length>=20000){cut++;continue;}
+    const k=nKey(comp);
+    if(seen.has(k)){dup++;continue;}
+    seen.add(k);
+    const c={id:uid(),comp,src:'cis',verified:0,vdate:'',
+      srno:val(r,map.srno),caseno:val(r,map.caseno),partyname:val(r,map.partyname),
+      ps:val(r,map.ps),section:val(r,map.section),remark:val(r,map.remark)};
+    c.searchableText=gSrch(c);
+    fresh.push(c);
+  }
+  await idbPutMany(fresh,n=>{$('imProg').style.width=Math.round(n*100/fresh.length)+'%';});
+  cData=cData.concat(fresh);
+  reindex();drawTable(getFiltered());updateDash();updateSU();
+  btn.disabled=false;btn.textContent='📤 Upload Excel';
+  $('imProgWrap').style.display='none';$('imProg').style.width='0';
+  $('mapBox').style.display='none';$('excelFile').value='';IMP=null;
+  let m='✅ '+fresh.length+' cases upload ho gaye';
+  if(dup)m+=' · '+dup+' duplicate chhode';
+  if(cut)m+=' · 20,000 limit par '+cut+' rah gaye';
+  upStatus(m,'ok');showToast('✅ Upload: '+fresh.length+' cases');speak('Excel uploaded');
+}
+
+// ════════════════════════════════════════
+// EXCEL DOWNLOAD
+// ════════════════════════════════════════
+const COLS=[{h:'Sr',w:6},{h:'Computer No',w:14},{h:'Case No',w:18},{h:'Party Name',w:32},
+  {h:'Section',w:20},{h:'PS',w:14},{h:'Source',w:10},{h:'Status',w:12},{h:'Verify Date',w:18},{h:'Remark',w:24}];
+function rowFor(c,i){
+  const k=kindOf(c);
+  return[i+1,c.comp||'',c.caseno||'',T(c.partyname),T(c.section),T(c.ps),
+    c.src==='manual'?'New Entry':'CIS',
+    k==='verified'?'Verified':k==='pending'?'Pending':'New Entry',
+    c.vdate?fmtDT(c.vdate):'',c.remark||''];
+}
+function dl(blob,name){
+  const u=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(u);a.remove();},1200);
+}
+async function downloadExcel(){
+  if(!cData.length){showToast('⚠️ Data nahi hai','w');return;}
+  if(cData.length>5000)showToast('⏳ Badi file — kuch second lagenge','w');
+  try{
+    await needXJS();
+    await new Promise(r=>setTimeout(r,50));
+    const wb=new ExcelJS.Workbook();wb.creator='Charge Verify';wb.created=new Date();
+    let v=0,p=0,e=0;
+    cData.forEach(c=>{const k=kindOf(c);if(k==='verified')v++;else if(k==='pending')p++;else e++;});
+    const sum=wb.addWorksheet('Summary');
+    sum.columns=[{width:30},{width:34}];
+    const t0=sum.addRow([(META.court||'Court')+' — Charge Verification']);
+    t0.font={name:'Nirmala UI',size:15,bold:true};sum.mergeCells('A1:B1');sum.addRow([]);
+    const put=(a,b)=>{const r=sum.addRow([a,b]);r.font={name:'Nirmala UI',size:11};
+      r.getCell(1).font={name:'Nirmala UI',size:11,bold:true,color:{argb:'FF444C5E'}};};
+    put('Officer',META.off||'—');
+    put('Charge Date',META.date?META.date.split('-').reverse().join('-'):'—');
+    put('Report Date',fmtDT(new Date().toISOString()));
+    sum.addRow([]);
+    put('CIS Total',v+p);put('Verified (mil gayi)',v);put('Pending (nahi mili)',p);
+    put('New Entry (Excel list mein nahi)',e);put('Progress',((v+p)?Math.round(v*100/(v+p)):0)+'%');
+    const mk=(name,arr,tint)=>{
+      const ws=wb.addWorksheet(name);
+      ws.columns=COLS.map(c=>({width:c.w}));
+      const h=ws.addRow(COLS.map(c=>c.h));h.height=22;
+      h.eachCell(cell=>{
+        cell.font={name:'Nirmala UI',size:11,bold:true,color:{argb:'FFFFFFFF'}};
+        cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:tint}};
+        cell.alignment={vertical:'middle',horizontal:'center',wrapText:true};
+        cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
+      });
+      const F={name:'Nirmala UI',size:10},AL={vertical:'top',wrapText:true};
+      arr.forEach((c,i)=>{const r=ws.addRow(rowFor(c,i));r.font=F;r.alignment=AL;});
+      ws.views=[{state:'frozen',ySplit:1}];
+      ws.autoFilter={from:{row:1,column:1},to:{row:1,column:COLS.length}};
+    };
+    mk('All',cData,'FF0C1A3D');
+    [['Pending','pending','FF9A6A18'],['Verified','verified','FF1B6B42'],['New Entry','extra','FF8C2540']]
+      .forEach(x=>{const a=cData.filter(c=>kindOf(c)===x[1]);if(a.length)mk(x[0],a,x[2]);});
+    const buf=await wb.xlsx.writeBuffer();
+    const d=new Date();
+    dl(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
+      'ChargeVerify_'+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'.xlsx');
+    showToast('📊 Excel download ho gayi');
+  }catch(err){
+    console.error(err);
+    const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
+    const lines=[COLS.map(c=>q(c.h)).join(',')];
+    cData.forEach((c,i)=>lines.push(rowFor(c,i).map(q).join(',')));
+    dl(new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),'ChargeVerify.csv');
+    showToast('CSV download kar di (Excel lib nahi mili)','w');
+  }
+}
+
+// ════════════════════════════════════════
+// BACKUP / RESTORE / WIPE
+// ════════════════════════════════════════
+function bkStatus(msg,type){
+  const el=$('backupStatus');el.textContent=msg;el.className='smsg s-'+type;
+  clearTimeout(el._t);el._t=setTimeout(()=>el.className='smsg',4000);
+}
+function exportBackup(){
+  try{
+    const bk={exportedAt:new Date().toISOString(),app:'ChargeVerify',meta:META,cases:cData.map(strip)};
+    dl(new Blob([JSON.stringify(bk)],{type:'application/json'}),
+      'ChargeVerifyBackup_'+new Date().toISOString().split('T')[0]+'.json');
+    bkStatus('✅ Backup export ho gaya!','ok');
+  }catch(e){bkStatus('❌ Export fail: '+e,'err');}
+}
+async function importBackup(ev){
+  const file=ev.target.files[0];if(!file)return;
+  try{
+    const bk=JSON.parse(await file.text());
+    if(!bk.cases)throw 0;
+    if(!confirm('Restore karne par mojuda data hat jayega. Jari rakhein?'))return;
+    await idbClr();
+    cData=bk.cases.map(c=>{c.searchableText=gSrch(c);return c;});
+    if(bk.meta)Object.assign(META,bk.meta);
+    await idbPutMany(cData);await saveMeta();
+    rebuildDicts();reindex();fillMeta();drawTable(getFiltered());updateDash();
+    bkStatus('✅ Restore ho gaya — '+cData.length+' cases','ok');
+    showToast('✅ Backup restore ho gaya!');
+  }catch(e){bkStatus('❌ Restore fail — file sahi nahi hai','err');}
+  ev.target.value='';
+}
+// ════════════════════════════════════════
+// TRANSLATE TAB
+// ════════════════════════════════════════
+function toggleTS(which){
+  META[which]=META[which]?0:1;
+  $(which==='tr'?'trBtn':'sfBtn').classList.toggle('on',!!META[which]);
+  saveMeta();runPreview();drawTable(getFiltered());
+  showToast((which==='tr'?'🔤 Translate ':'✂️ Short Form ')+(META[which]?'ON':'OFF'));
+}
+function runPreview(){
+  const v=$('trIn').value;
+  const out=$('trOut');
+  out.innerHTML='<b>Result</b><span>'+esc(v?T(v):'—')+'</span>';
+}
+function copyOut(){
+  const v=T($('trIn').value||'');
+  if(!v){showToast('⚠️ Pehle text likho','w');return;}
+  try{navigator.clipboard.writeText(v);showToast('📋 Copy ho gaya');}
+  catch(e){showToast('Copy fail','d');}
+}
+async function saveDicts(){
+  META.dictTr=$('dictTr').value;META.dictSf=$('dictSf').value;
+  await saveMeta();rebuildDicts();runPreview();drawTable(getFiltered());
+  const el=$('dictStatus');el.textContent='✅ Dictionary save ho gayi';el.className='smsg s-ok';
+  clearTimeout(el._t);el._t=setTimeout(()=>el.className='smsg',3000);
+}
+
+// ════════════════════════════════════════
+// TABS / MISC
+// ════════════════════════════════════════
+function switchTab(t){
+  document.querySelectorAll('.tab-btn').forEach((b,i)=>b.classList.toggle('on',['cv','st'][i]===t));
+  $('cv-tab').classList.toggle('on',t==='cv');
+  $('st-tab').classList.toggle('on',t==='st');
+  $('cvFlt').style.display=t==='cv'?'flex':'none';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function updateSU(){
+  try{
+    if(navigator.storage&&navigator.storage.estimate){
+      const e=await navigator.storage.estimate();
+      $('storageUsage').textContent=(e.usage/1048576).toFixed(2)+'MB / '+(e.quota/1048576).toFixed(0)+'MB';
+    }else $('storageUsage').textContent=memMode?'Session only ⚠':'IndexedDB';
+  }catch(e){$('storageUsage').textContent='IndexedDB';}
+}
+function fillMeta(){
+  $('courtName').value=META.court||'';$('offName').value=META.off||'';$('chargeDate').value=META.date||'';
+  $('dictTr').value=META.dictTr||'';$('dictSf').value=META.dictSf||'';
+  $('trBtn').classList.toggle('on',!!META.tr);
+  $('sfBtn').classList.toggle('on',!!META.sf);
+}
+
+// ════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════
+let sDeb;
+window.onload=async()=>{
+  const ok=await openDB();
+  memMode=!ok;
+  if(!ok){$('stDot').className='warn';$('stDot').title='Storage nahi mila — sirf session';}
+  const m=await idbGM('meta');
+  if(m)Object.assign(META,m);
+  const rows=await idbAll();
+  cData=(rows||[]).map(c=>{c.searchableText=gSrch(c);return c;});
+  rebuildDicts();reindex();fillMeta();
+  drawTable(getFiltered());updateDash();updateSU();runPreview();
+
+  $('searchBox').addEventListener('input',()=>{clearTimeout(sDeb);sDeb=setTimeout(()=>drawTable(getFiltered()),150);});
+  ['courtName','offName','chargeDate'].forEach(id=>{
+    $(id).addEventListener('change',()=>{
+      META[id==='courtName'?'court':id==='offName'?'off':'date']=$(id).value;saveMeta();
+    });
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){closeNE();closeCaseDetail();closeDD();}
+  });
+};
+window.APP={get cData(){return cData;},set cData(v){cData=v;},META,reindex,drawTable,getFiltered,updateDash,
+  gSrch,findByNo,kindOf,manualAction,openNewEntry,saveNewEntry,openCaseDetail,cdVerify,setFilter,
+  uploadExcel,downloadExcel,rowFor,T,toggleTS,sheetChosen,headChosen,guessCols,showMore,scrollToFile,jumpVerify,
+  onManualInput,selDD,get IMP(){return IMP;},set IMP(v){IMP=v;}};
+
+</script>
+</body>
+
+</html>

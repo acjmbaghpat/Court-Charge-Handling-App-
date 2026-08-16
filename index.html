@@ -303,14 +303,14 @@ tr:hover td{background:#f0f4ff}
     <button class="btn btn-s" onclick="manualAction('VERIFY')">✅ VERIFIED</button>
     <div id="manualStatus" class="smsg"></div>
     <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
-      Type karte hi Excel list se suggestions — Case No ke saath Name Party, u/s, CC No. VERIFIED dabate hi us case par le jayenge.
+      Type karte hi Excel list se suggestions — Case No ke saath Party Name, PS, CC No. VERIFIED dabate hi us case par le jayenge.
     </div>
   </div>
 
   <!-- Search & Filter -->
   <div class="sec">
     <h3>🔍 Search &amp; Filter</h3>
-    <input type="text" id="searchBox" placeholder="Case No, Name Party, u/s, CC No...">
+    <input type="text" id="searchBox" placeholder="Case No, Party Name, PS, CC No...">
     <div class="ftabs">
       <button class="ftab ft-all" id="tab-all" onclick="setFilter('all')">🗂️ All<span class="tc" id="tabAllCount">0</span></button>
       <button class="ftab" id="tab-pending" onclick="setFilter('pending')">⏳ Pending<span class="tc" id="tabPendCount">0</span></button>
@@ -378,7 +378,7 @@ tr:hover td{background:#f0f4ff}
     <button class="btn btn-a" id="upBtn" onclick="uploadExcel()">📤 Upload Excel</button>
     <div id="upStatus" class="smsg"></div>
     <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
-      20,000 cases tak. Columns list jaise hi rahenge — Sr.No, Case No, Name Party, u/s, CC No, Remark. Sr.No file ka apna hi rahega.
+      20,000 cases tak. Columns list jaise hi — Sr.No, Case No, Party Name, PS, CC No, Remark. Sr.No file ka apna hi rahega.
     </div>
   </div>
 
@@ -423,7 +423,10 @@ tr:hover td{background:#f0f4ff}
   <!-- Download & Backup -->
   <div class="sec bk-sec">
     <h3>🗄️ Download &amp; Backup</h3>
-    <button class="btn btn-s" onclick="downloadExcel()" style="margin-top:0">📊 Download Excel</button>
+    <button class="btn btn-s" id="dlBtn" onclick="downloadExcel()" style="margin-top:0">📊 Download Excel</button>
+    <div class="jo-row" style="margin-top:10px">
+      <button class="jo-btn s on" id="splitSheets" onclick="toggleSplit()">📑 Alag sheets — Pending / Verified / New</button>
+    </div>
     <div class="g2">
       <button class="btn btn-pu" onclick="exportBackup()">⬇️ Backup Export</button>
       <button class="btn btn-opu" onclick="document.getElementById('restoreFile').click()">⬆️ Restore</button>
@@ -431,7 +434,7 @@ tr:hover td{background:#f0f4ff}
     <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="importBackup(event)">
     <div id="backupStatus" class="smsg"></div>
     <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
-      Excel mein Summary + All + Pending + Verified + New Entry — verify date ke saath.
+      Excel mein Summary + All sheet hamesha. Upar wala button ON ho to Pending / Verified / New alag sheets bhi banti hain — 20,000 cases par isme 15-20 second lagte hain, band rakho to 5-6 second.
     </div>
   </div>
 
@@ -447,11 +450,12 @@ tr:hover td{background:#f0f4ff}
       <div><label class="fl" style="margin-top:0">Case No. *</label><input type="text" id="ne-case" autocomplete="off"></div>
       <div><label class="fl" style="margin-top:0">Sr.No</label><input type="text" id="ne-sr" autocomplete="off"></div>
     </div>
-    <label class="fl">Name Party</label><input type="text" id="ne-party" autocomplete="off">
+    <label class="fl">Party Name</label><input type="text" id="ne-party" autocomplete="off">
     <div class="g2">
-      <div><label class="fl" style="margin-top:0">u/s</label><input type="text" id="ne-sec" autocomplete="off"></div>
+      <div><label class="fl" style="margin-top:0">PS</label><input type="text" id="ne-ps" autocomplete="off"></div>
       <div><label class="fl" style="margin-top:0">CC No</label><input type="text" id="ne-cc" autocomplete="off"></div>
     </div>
+    <label class="fl">u/s (agar list mein ho)</label><input type="text" id="ne-sec" autocomplete="off">
     <label class="fl">Remark</label><input type="text" id="ne-rem" autocomplete="off" placeholder="e.g. file cover phata hai">
     <input type="hidden" id="ne-id">
     <div class="g2" style="margin-top:14px">
@@ -697,14 +701,15 @@ function T(s){
 // STATE
 // ════════════════════════════════════════
 // caseno = CIS list ka Case No (= computer no, dono ek hi hai) — yahi verification ki key hai
-// ccno   = list ka CC No column (sirf dikhane ke liye)
+// ps/ccno= list ke PS aur CC No column (sirf dikhane ke liye)
+// section= u/s — file mein ho to column apne aap aa jayega
 // srno   = list ka apna serial — kabhi renumber nahi hota
 // ord    = file mein row ka original order — table isi order mein dikhti hai
 let cData=[], aFilter='all', shown=0, PAGE=150, ddIdx=-1, ddList=[];
 let byCase=new Map(), byDig=new Map();
 let META={court:'',off:'',date:'',tr:0,sf:0,dictTr:'',dictSf:''};
 const rTimers={};
-function gSrch(r){return[r.srno,r.caseno,r.partyname,r.section,r.ccno,r.remark].join(' ').toLowerCase();}
+function gSrch(r){return[r.srno,r.caseno,r.partyname,r.ps,r.ccno,r.section,r.remark].join(' ').toLowerCase();}
 function reindex(){
   byCase.clear();byDig.clear();
   cData.sort((a,b)=>(a.ord==null?9e9:a.ord)-(b.ord==null?9e9:b.ord));
@@ -761,7 +766,7 @@ function getFiltered(){
 // ════════════════════════════════════════
 // TABLE
 // ════════════════════════════════════════
-let viewData=[];
+let viewData=[], hasUS=false;
 function drawTable(data,keepShown){
   viewData=data||[];
   if(!keepShown)shown=Math.min(PAGE,viewData.length);
@@ -772,8 +777,11 @@ function drawTable(data,keepShown){
     $('tblInfo').textContent=cData.length?'Koi record nahi mila':'Excel upload karke shuru karo';
     return;
   }
-  // columns bilkul CIS list jaise
-  const L=["Sr.No","Case No","Name Party","u/s","CC No","Status","Verify Date","Remark"];
+  // columns CIS list ke order mein — u/s tabhi aata hai jab file mein ho
+  hasUS=cData.some(c=>c.section);
+  const L=["Sr.No","Case No","Party Name","PS","CC No"];
+  if(hasUS)L.push("u/s");
+  L.push("Status","Verify Date","Remark");
   let h="<tr>"+L.map(x=>"<th>"+x+"</th>").join("")+"</tr>";
   for(let i=0;i<shown;i++){
     const r=viewData[i];if(!r)break;
@@ -787,8 +795,9 @@ function drawTable(data,keepShown){
       +'<td>'+esc(r.srno||'')+'</td>'
       +'<td class="kcell"><span class="cnoL" onclick="openCaseDetail(\''+cj+'\')">'+esc(r.caseno)+'</span></td>'
       +'<td class="kcell">'+esc(T(r.partyname))+'</td>'
-      +'<td>'+esc(T(r.section))+'</td>'
+      +'<td>'+esc(T(r.ps))+'</td>'
       +'<td>'+esc(r.ccno||'')+'</td>'
+      +(hasUS?'<td>'+esc(T(r.section))+'</td>':'')
       +'<td>'+pill+'</td>'
       +'<td>'+(r.vdate?fmtDT(r.vdate):'')+'</td>'
       +'<td><input value="'+ra+'" oninput="updateRemark(\''+cj+'\',this.value)" placeholder="Remark..."></td>'
@@ -846,7 +855,7 @@ function onManualInput(){
   dd.innerHTML=ddList.map((r,i)=>{
     const cj=String(r.caseno).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const party=T(r.partyname)||'—';
-    const l2=[T(r.section)?'u/s '+T(r.section):'',r.ccno?'CC '+r.ccno:''].filter(Boolean).join(' · ')||'—';
+    const l2=[T(r.ps),T(r.section)?'u/s '+T(r.section):'',r.ccno?'CC '+r.ccno:''].filter(Boolean).join(' · ')||'—';
     const tick=r.verified?' <span class="pill pill-v">✓</span>':r.src==='manual'?' <span class="pill pill-e">New</span>':'';
     return '<div class="di" data-cno="'+String(r.caseno).replace(/"/g,'&quot;')+'" onmousedown="selDD(\''+cj+'\')">'
       +'<span class="di-no">'+esc(r.caseno)+'</span>'
@@ -918,7 +927,7 @@ function openNewEntry(pre){
   $('ne-title').textContent=pre.id?'✏️ Edit Entry':'➕ New Entry';
   $('ne-id').value=pre.id||'';
   $('ne-case').value=pre.caseno||'';$('ne-party').value=pre.partyname||'';
-  $('ne-sec').value=pre.section||'';$('ne-cc').value=pre.ccno||'';
+  $('ne-ps').value=pre.ps||'';$('ne-cc').value=pre.ccno||'';$('ne-sec').value=pre.section||'';
   $('ne-sr').value=pre.srno||'';$('ne-rem').value=pre.remark||'';
   $('neModal').classList.add('on');
   setTimeout(()=>$('ne-case').focus(),260);
@@ -930,8 +939,9 @@ async function saveNewEntry(again){
   const caseno=$('ne-case').value.trim();
   if(!caseno){showToast('⚠️ Case No zaroori hai','w');$('ne-case').focus();return;}
   const id=$('ne-id').value;
-  const f={caseno,partyname:$('ne-party').value.trim(),section:$('ne-sec').value.trim(),
-    ccno:$('ne-cc').value.trim(),srno:$('ne-sr').value.trim(),remark:$('ne-rem').value.trim()};
+  const f={caseno,partyname:$('ne-party').value.trim(),ps:$('ne-ps').value.trim(),
+    ccno:$('ne-cc').value.trim(),section:$('ne-sec').value.trim(),
+    srno:$('ne-sr').value.trim(),remark:$('ne-rem').value.trim()};
   if(id){
     const c=cData.find(x=>x.id===id);
     if(c){Object.assign(c,f);c.searchableText=gSrch(c);await idbPut(strip(c));}
@@ -964,8 +974,8 @@ function openCaseDetail(cno){
   $('cd-title').textContent='📁 Case No. '+r.caseno;
   $('cd-sub').textContent=T(r.partyname)||'';
   const rows=[
-    ['Sr.No',r.srno||'—'],['Case No',r.caseno],['Name Party',T(r.partyname)||'—'],
-    ['u/s',T(r.section)||'—'],['CC No',r.ccno||'—'],
+    ['Sr.No',r.srno||'—'],['Case No',r.caseno],['Party Name',T(r.partyname)||'—'],
+    ['PS',T(r.ps)||'—'],['CC No',r.ccno||'—'],['u/s',T(r.section)||'—'],
     ['Source',r.src==='manual'?'➕ New Entry (list mein nahi)':'📋 CIS Excel List'],
     ['Status',k==='verified'?'✅ Verified':k==='pending'?'⏳ Pending':'➕ New Entry'],
     ['Verify Date',r.vdate?fmtDT(r.vdate):'—']
@@ -1032,15 +1042,18 @@ const needXJS=()=>window.ExcelJS?Promise.resolve():loadLib(['libs/exceljs.min.js
 // ════════════════════════════════════════
 // EXCEL UPLOAD
 // ════════════════════════════════════════
-// CIS list ke columns — isi order mein: Sr.No | Case No | Name Party | u/s | CC No | Remark
+// CIS list ke columns — isi order mein: Sr.No | Case No | Party Name | PS | CC No | Remark
+// (u/s optional — file mein ho to map ho jaayega aur table mein column aa jayega)
 const FIELDS=[
   {k:'srno',l:'Sr.No',kw:['sr.no','sr no','s.no','sno','serial','क्रम','क्र.','क्रमांक']},
   {k:'caseno',l:'Case No',req:1,kw:['case no','case number','case_no','वाद संख्या','वाद सं','मुकदमा सं','केस न','caseno','case']},
-  {k:'partyname',l:'Name Party',kw:['name party','name of part','party name','पक्षकार','वादी','प्रतिवादी','बनाम','title','party','name']},
-  {k:'section',l:'u/s',kw:['u/s','under section','धारा','section','act','अधिनियम','अपराध','offence']},
-  {k:'ccno',l:'CC No',kw:['cc no','cc.no','ccno','cc','computer','कंप्यूटर','कम्प्यूटर','कंप्युटर','सी.सी']},
-  {k:'remark',l:'Remark',kw:['remark','टिप्पणी','note','stage','चरण','purpose','प्रयोजन','status','स्थिति']}
+  {k:'partyname',l:'Party Name',kw:['party name','name party','name of part','पक्षकार','वादी','प्रतिवादी','बनाम','title','party','name']},
+  {k:'ps',l:'PS',kw:['police station','p.s','थाना','ps','station','थाना/']},
+  {k:'ccno',l:'CC No',kw:['cc no','cc.no','ccno','c.c','cc','computer','कंप्यूटर','कम्प्यूटर','कंप्युटर','सी.सी']},
+  {k:'remark',l:'Remark',kw:['remark','टिप्पणी','note','stage','चरण','purpose','प्रयोजन','status','स्थिति']},
+  {k:'section',l:'u/s (optional)',kw:['u/s','under section','धारा','section','act','अधिनियम','अपराध','offence']}
 ];
+const POS_FIELDS=['srno','caseno','partyname','ps','ccno','remark'];  // heading match na ho to isi order se
 let IMP=null;
 function guessCols(head){
   const used=new Set(),out={};
@@ -1057,12 +1070,12 @@ function guessCols(head){
     if(best>-1)used.add(best);
     out[f.k]=best;
   }
-  // heading match na ho to file ke apne order se bhar do (Sr.No, Case No, Name Party, u/s, CC No, Remark)
+  // heading match na ho to file ke apne order se bhar do (u/s ko chhod kar — wo optional hai)
   let col=0;
-  for(const f of FIELDS){
-    if(out[f.k]>-1)continue;
+  for(const k of POS_FIELDS){
+    if(out[k]>-1)continue;
     while(col<H.length&&used.has(col))col++;
-    if(col<H.length){out[f.k]=col;used.add(col);col++;}
+    if(col<H.length){out[k]=col;used.add(col);col++;}
   }
   return out;
 }
@@ -1153,8 +1166,8 @@ async function uploadExcel(){
     const c={id:uid(),caseno,src:'cis',verified:0,vdate:'',
       ord:base+n,                                   // file ka order — table isi mein rahegi
       srno:val(r,map.srno)||String(base+n),          // list ka apna serial, kabhi badalta nahi
-      partyname:val(r,map.partyname),section:val(r,map.section),
-      ccno:val(r,map.ccno),remark:val(r,map.remark)};
+      partyname:val(r,map.partyname),ps:val(r,map.ps),ccno:val(r,map.ccno),
+      section:val(r,map.section),remark:val(r,map.remark)};
     c.searchableText=gSrch(c);
     fresh.push(c);
   }
@@ -1173,14 +1186,18 @@ async function uploadExcel(){
 // ════════════════════════════════════════
 // EXCEL DOWNLOAD
 // ════════════════════════════════════════
-const COLS=[{h:'Sr.No',w:8},{h:'Case No',w:18},{h:'Name Party',w:36},{h:'u/s',w:20},
-  {h:'CC No',w:14},{h:'Source',w:11},{h:'Status',w:12},{h:'Verify Date',w:18},{h:'Remark',w:24}];
-function rowFor(c,i){
+function exCols(){
+  const c=[{h:'Sr.No',w:8},{h:'Case No',w:18},{h:'Party Name',w:34},{h:'PS',w:15},{h:'CC No',w:14}];
+  if(cData.some(x=>x.section))c.push({h:'u/s',w:20});
+  return c.concat([{h:'Source',w:11},{h:'Status',w:12},{h:'Verify Date',w:18},{h:'Remark',w:24}]);
+}
+function rowFor(c,i,withUS){
   const k=kindOf(c);
-  return[c.srno||(i+1),c.caseno||'',T(c.partyname),T(c.section),c.ccno||'',
-    c.src==='manual'?'New Entry':'CIS',
+  const r=[c.srno||(i+1),c.caseno||'',T(c.partyname),T(c.ps),c.ccno||''];
+  if(withUS)r.push(T(c.section));
+  return r.concat([c.src==='manual'?'New Entry':'CIS',
     k==='verified'?'Verified':k==='pending'?'Pending':'New Entry',
-    c.vdate?fmtDT(c.vdate):'',c.remark||''];
+    c.vdate?fmtDT(c.vdate):'',c.remark||'']);
 }
 function dl(blob,name){
   const u=URL.createObjectURL(blob),a=document.createElement('a');
@@ -1189,7 +1206,9 @@ function dl(blob,name){
 }
 async function downloadExcel(){
   if(!cData.length){showToast('⚠️ Data nahi hai','w');return;}
-  if(cData.length>5000)showToast('⏳ Badi file — kuch second lagenge','w');
+  const big=cData.length>5000&&$('splitSheets').classList.contains('on');
+  if(cData.length>5000)showToast(big?'⏳ 4 sheets ban rahi hain — thoda time lagega':'⏳ Excel ban rahi hai...','w');
+  const dBtn=$('dlBtn');if(dBtn)dBtn.textContent='⏳ Ban rahi hai...';
   try{
     await needXJS();
     await new Promise(r=>setTimeout(r,50));
@@ -1208,6 +1227,7 @@ async function downloadExcel(){
     sum.addRow([]);
     put('CIS Total',v+p);put('Verified (mil gayi)',v);put('Pending (nahi mili)',p);
     put('New Entry (Excel list mein nahi)',e);put('Progress',((v+p)?Math.round(v*100/(v+p)):0)+'%');
+    const COLS=exCols(),withUS=cData.some(x=>x.section);
     const mk=(name,arr,tint)=>{
       const ws=wb.addWorksheet(name);
       ws.columns=COLS.map(c=>({width:c.w}));
@@ -1219,13 +1239,15 @@ async function downloadExcel(){
         cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
       });
       const F={name:'Nirmala UI',size:10},AL={vertical:'top',wrapText:true};
-      arr.forEach((c,i)=>{const r=ws.addRow(rowFor(c,i));r.font=F;r.alignment=AL;});
+      arr.forEach((c,i)=>{const r=ws.addRow(rowFor(c,i,withUS));r.font=F;r.alignment=AL;});
       ws.views=[{state:'frozen',ySplit:1}];
       ws.autoFilter={from:{row:1,column:1},to:{row:1,column:COLS.length}};
     };
     mk('All',cData,'FF0C1A3D');
-    [['Pending','pending','FF9A6A18'],['Verified','verified','FF1B6B42'],['New Entry','extra','FF8C2540']]
-      .forEach(x=>{const a=cData.filter(c=>kindOf(c)===x[1]);if(a.length)mk(x[0],a,x[2]);});
+    if($('splitSheets').classList.contains('on')){
+      [['Pending','pending','FF9A6A18'],['Verified','verified','FF1B6B42'],['New Entry','extra','FF8C2540']]
+        .forEach(x=>{const a=cData.filter(c=>kindOf(c)===x[1]);if(a.length)mk(x[0],a,x[2]);});
+    }
     const buf=await wb.xlsx.writeBuffer();
     const d=new Date();
     dl(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
@@ -1234,11 +1256,17 @@ async function downloadExcel(){
   }catch(err){
     console.error(err);
     const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-    const lines=[COLS.map(c=>q(c.h)).join(',')];
-    cData.forEach((c,i)=>lines.push(rowFor(c,i).map(q).join(',')));
+    const C=exCols(),wU=cData.some(x=>x.section);
+    const lines=[C.map(c=>q(c.h)).join(',')];
+    cData.forEach((c,i)=>lines.push(rowFor(c,i,wU).map(q).join(',')));
     dl(new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),'ChargeVerify.csv');
     showToast('CSV download kar di (Excel lib nahi mili)','w');
   }
+  const dBtn2=$('dlBtn');if(dBtn2)dBtn2.textContent='📊 Download Excel';
+}
+function toggleSplit(){
+  const el=$('splitSheets');el.classList.toggle('on');
+  showToast(el.classList.contains('on')?'Alag sheets ON':'Sirf All sheet');
 }
 
 // ════════════════════════════════════════
@@ -1351,7 +1379,7 @@ window.onload=async()=>{
 };
 window.APP={get cData(){return cData;},set cData(v){cData=v;},META,reindex,drawTable,getFiltered,updateDash,
   gSrch,findByNo,kindOf,manualAction,openNewEntry,saveNewEntry,openCaseDetail,cdVerify,setFilter,
-  uploadExcel,downloadExcel,rowFor,T,toggleTS,sheetChosen,headChosen,guessCols,showMore,scrollToFile,jumpVerify,
+  uploadExcel,downloadExcel,rowFor,T,toggleTS,sheetChosen,headChosen,guessCols,showMore,scrollToFile,jumpVerify,toggleSplit,exCols,
   onManualInput,selDD,get IMP(){return IMP;},set IMP(v){IMP=v;}};
 
 </script>

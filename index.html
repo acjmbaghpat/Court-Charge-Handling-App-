@@ -216,9 +216,11 @@ tr:hover td{background:#f0f4ff}
 #cd-info span{min-width:92px;font-size:11px;color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.3px;flex-shrink:0;padding-top:2px}
 #cd-info strong{font-size:13px;color:var(--txt);font-weight:600}
 
-/* ══════════ HIGHLIGHT ══════════ */
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+/* ══════════ HIGHLIGHT (Case No + Name Party) ══════════ */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 .hl td{background:#fef9c3 !important;animation:pulse 1s 3}
+.hl td.kcell{background:#fde68a !important;box-shadow:inset 0 0 0 2px #f59e0b}
+.hl td.kcell .cnoL{color:#92400e}
 
 /* ══════════ TOAST ══════════ */
 #toast{
@@ -258,6 +260,7 @@ tr:hover td{background:#f0f4ff}
 .jo-btn.s{border-color:#7c3aed;color:#7c3aed}
 .jo-btn.s.on{background:#7c3aed;color:#fff;box-shadow:0 3px 12px rgba(124,58,237,.3)}
 .pvbox{background:#f8fafc;border:1.5px solid var(--bdr);border-radius:12px;padding:13px 15px;margin-top:12px;font-size:14px;line-height:1.7;min-height:52px}
+.pvbox i{font-style:normal}
 .pvbox b{color:var(--mu);font-size:10.5px;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px;font-weight:700}
 </style>
 </head>
@@ -293,21 +296,21 @@ tr:hover td{background:#f0f4ff}
   <div class="sec" id="verifySec">
     <h3>✅ Verification</h3>
     <div class="dwrap">
-      <input type="text" id="manualCaseInput" placeholder="Computer No. / Case No. / Party..." autocomplete="off"
+      <input type="text" id="manualCaseInput" placeholder="Case No. type karo..." autocomplete="off"
         oninput="onManualInput()" onkeydown="onManualKeyDown(event)">
       <div id="caseDD"></div>
     </div>
     <button class="btn btn-s" onclick="manualAction('VERIFY')">✅ VERIFIED</button>
     <div id="manualStatus" class="smsg"></div>
     <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
-      Excel list se suggestions — case no, party, PS, dhara. Verified dabate hi us case par pahuncha denge.
+      Type karte hi Excel list se suggestions — Case No ke saath Name Party, u/s, CC No. VERIFIED dabate hi us case par le jayenge.
     </div>
   </div>
 
   <!-- Search & Filter -->
   <div class="sec">
     <h3>🔍 Search &amp; Filter</h3>
-    <input type="text" id="searchBox" placeholder="Computer No, Case No, Party, PS, Section...">
+    <input type="text" id="searchBox" placeholder="Case No, Name Party, u/s, CC No...">
     <div class="ftabs">
       <button class="ftab ft-all" id="tab-all" onclick="setFilter('all')">🗂️ All<span class="tc" id="tabAllCount">0</span></button>
       <button class="ftab" id="tab-pending" onclick="setFilter('pending')">⏳ Pending<span class="tc" id="tabPendCount">0</span></button>
@@ -369,11 +372,14 @@ tr:hover td{background:#f0f4ff}
       <div class="prev" id="imPrev"></div>
       <label class="fl" style="margin-bottom:8px">Column mapping</label>
       <div id="imMap"></div>
+      <div class="pvbox" id="mapPrev"><b>Aisa dikhega</b><span>—</span></div>
       <div class="prog" id="imProgWrap"><i id="imProg"></i></div>
     </div>
     <button class="btn btn-a" id="upBtn" onclick="uploadExcel()">📤 Upload Excel</button>
     <div id="upStatus" class="smsg"></div>
-    <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">20,000 cases tak — computer number se verification hoti hai</div>
+    <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
+      20,000 cases tak. Columns list jaise hi rahenge — Sr.No, Case No, Name Party, u/s, CC No, Remark. Sr.No file ka apna hi rahega.
+    </div>
   </div>
 
   <!-- New Entry -->
@@ -438,13 +444,13 @@ tr:hover td{background:#f0f4ff}
     <div class="mt" id="ne-title">➕ New Entry</div>
     <div class="msub">Jo case Excel list mein nahi hai — naya add karo ("New" mein count hoga)</div>
     <div class="g2" style="margin-top:0">
-      <div><label class="fl" style="margin-top:0">Computer No. *</label><input type="text" id="ne-comp" inputmode="numeric" autocomplete="off"></div>
-      <div><label class="fl" style="margin-top:0">Case No.</label><input type="text" id="ne-case" autocomplete="off"></div>
+      <div><label class="fl" style="margin-top:0">Case No. *</label><input type="text" id="ne-case" autocomplete="off"></div>
+      <div><label class="fl" style="margin-top:0">Sr.No</label><input type="text" id="ne-sr" autocomplete="off"></div>
     </div>
-    <label class="fl">Party Name</label><input type="text" id="ne-party" autocomplete="off">
+    <label class="fl">Name Party</label><input type="text" id="ne-party" autocomplete="off">
     <div class="g2">
-      <div><label class="fl" style="margin-top:0">PS / थाना</label><input type="text" id="ne-ps" autocomplete="off"></div>
-      <div><label class="fl" style="margin-top:0">Section / धारा</label><input type="text" id="ne-sec" autocomplete="off"></div>
+      <div><label class="fl" style="margin-top:0">u/s</label><input type="text" id="ne-sec" autocomplete="off"></div>
+      <div><label class="fl" style="margin-top:0">CC No</label><input type="text" id="ne-cc" autocomplete="off"></div>
     </div>
     <label class="fl">Remark</label><input type="text" id="ne-rem" autocomplete="off" placeholder="e.g. file cover phata hai">
     <input type="hidden" id="ne-id">
@@ -690,26 +696,27 @@ function T(s){
 // ════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════
+// caseno = CIS list ka Case No (= computer no, dono ek hi hai) — yahi verification ki key hai
+// ccno   = list ka CC No column (sirf dikhane ke liye)
+// srno   = list ka apna serial — kabhi renumber nahi hota
+// ord    = file mein row ka original order — table isi order mein dikhti hai
 let cData=[], aFilter='all', shown=0, PAGE=150, ddIdx=-1, ddList=[];
-let byComp=new Map(), byDig=new Map();
+let byCase=new Map(), byDig=new Map();
 let META={court:'',off:'',date:'',tr:0,sf:0,dictTr:'',dictSf:''};
 const rTimers={};
-function gSrch(r){return[r.comp,r.caseno,r.partyname,r.section,r.ps,r.remark].join(' ').toLowerCase();}
+function gSrch(r){return[r.srno,r.caseno,r.partyname,r.section,r.ccno,r.remark].join(' ').toLowerCase();}
 function reindex(){
-  byComp.clear();byDig.clear();
-  cData.sort((a,b)=>{
-    const x=parseInt(dKey(a.comp)||'0',10),y=parseInt(dKey(b.comp)||'0',10);
-    return x!==y?x-y:String(a.comp).localeCompare(String(b.comp));
-  });
+  byCase.clear();byDig.clear();
+  cData.sort((a,b)=>(a.ord==null?9e9:a.ord)-(b.ord==null?9e9:b.ord));
   cData.forEach(c=>{
-    const k=nKey(c.comp);if(k&&!byComp.has(k))byComp.set(k,c);
-    const d=dKey(c.comp);if(d&&!byDig.has(d))byDig.set(d,c);
+    const k=nKey(c.caseno);if(k&&!byCase.has(k))byCase.set(k,c);
+    const d=dKey(c.caseno);if(d&&!byDig.has(d))byDig.set(d,c);
     if(!c.searchableText)c.searchableText=gSrch(c);
   });
 }
 function findByNo(v){
   const k=nKey(v);if(!k)return null;
-  return byComp.get(k)||byDig.get(dKey(v))||null;
+  return byCase.get(k)||byDig.get(dKey(v))||null;
 }
 function kindOf(c){return c.src==='manual'?'extra':(c.verified?'verified':'pending');}
 async function saveMeta(){await idbSM('meta',META);}
@@ -765,7 +772,8 @@ function drawTable(data,keepShown){
     $('tblInfo').textContent=cData.length?'Koi record nahi mila':'Excel upload karke shuru karo';
     return;
   }
-  const L=["Sr","Computer No","Case No","Party Name","Section","PS","Status","Verify Date","Remark"];
+  // columns bilkul CIS list jaise
+  const L=["Sr.No","Case No","Name Party","u/s","CC No","Status","Verify Date","Remark"];
   let h="<tr>"+L.map(x=>"<th>"+x+"</th>").join("")+"</tr>";
   for(let i=0;i<shown;i++){
     const r=viewData[i];if(!r)break;
@@ -773,18 +781,17 @@ function drawTable(data,keepShown){
     const pill=k==='verified'?'<span class="pill pill-v">✓ Verified</span>'
       :k==='pending'?'<span class="pill pill-p">⏳ Pending</span>'
       :'<span class="pill pill-e">➕ New</span>';
-    const cj=String(r.comp).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const cj=String(r.caseno).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
     const ra=String(r.remark||'').replace(/"/g,'&quot;');
-    h+='<tr id="row_'+sId(r.comp)+'">'
-      +'<td>'+esc(r.srno||(i+1))+'</td>'
-      +'<td><span class="cnoL" onclick="openCaseDetail(\''+cj+'\')">'+esc(r.comp)+'</span></td>'
-      +'<td>'+esc(r.caseno||'')+'</td>'
-      +'<td>'+esc(T(r.partyname))+'</td>'
+    h+='<tr id="row_'+sId(r.caseno)+'">'
+      +'<td>'+esc(r.srno||'')+'</td>'
+      +'<td class="kcell"><span class="cnoL" onclick="openCaseDetail(\''+cj+'\')">'+esc(r.caseno)+'</span></td>'
+      +'<td class="kcell">'+esc(T(r.partyname))+'</td>'
       +'<td>'+esc(T(r.section))+'</td>'
-      +'<td>'+esc(T(r.ps))+'</td>'
+      +'<td>'+esc(r.ccno||'')+'</td>'
       +'<td>'+pill+'</td>'
       +'<td>'+(r.vdate?fmtDT(r.vdate):'')+'</td>'
-      +'<td><input data-comp="'+String(r.comp).replace(/"/g,'&quot;')+'" value="'+ra+'" oninput="updateRemark(\''+cj+'\',this.value)" placeholder="Remark..."></td>'
+      +'<td><input value="'+ra+'" oninput="updateRemark(\''+cj+'\',this.value)" placeholder="Remark..."></td>'
       +'</tr>';
   }
   tbl.innerHTML=h;
@@ -792,26 +799,27 @@ function drawTable(data,keepShown){
   $('tblInfo').textContent=Math.min(shown,viewData.length)+' / '+viewData.length+' records';
 }
 function showMore(){shown=Math.min(shown+PAGE,viewData.length);drawTable(viewData,true);}
-async function updateRemark(comp,val){
-  clearTimeout(rTimers[comp]);
-  rTimers[comp]=setTimeout(async()=>{
-    const c=findByNo(comp);
+async function updateRemark(cno,val){
+  clearTimeout(rTimers[cno]);
+  rTimers[cno]=setTimeout(async()=>{
+    const c=findByNo(cno);
     if(c){c.remark=val;c.searchableText=gSrch(c);await idbPut(strip(c));}
-    delete rTimers[comp];
+    delete rTimers[cno];
   },400);
 }
-function scrollToFile(comp){
-  const idx=viewData.findIndex(r=>String(r.comp)===String(comp));
+// Case No + Name Party wale cell highlight karte hue us row par le jao
+function scrollToFile(cno){
+  const idx=viewData.findIndex(r=>String(r.caseno)===String(cno));
   if(idx===-1)return;
   if(idx>=shown){shown=Math.min(idx+30,viewData.length);drawTable(viewData,true);}
-  const row=$('row_'+sId(comp));
+  const row=$('row_'+sId(cno));
   if(!row)return;
   row.scrollIntoView({behavior:'smooth',block:'center'});
-  row.classList.add('hl');setTimeout(()=>row.classList.remove('hl'),4000);
+  row.classList.add('hl');setTimeout(()=>row.classList.remove('hl'),4500);
 }
 
 // ════════════════════════════════════════
-// MANUAL ENTRY (Computer No) + DROPDOWN
+// VERIFICATION BAR (Case No) + SUGGESTIONS
 // ════════════════════════════════════════
 function showMS(msg,type){
   const el=$('manualStatus');
@@ -826,7 +834,7 @@ function onManualInput(){
   const A=[],B=[],C=[];
   for(const c of cData){
     if(c===ex)continue;
-    const cd=dKey(c.comp),ck=nKey(c.comp);
+    const cd=dKey(c.caseno),ck=nKey(c.caseno);
     if((d&&cd===d)||(k&&ck===k))A.push(c);
     else if((d&&cd.startsWith(d))||(k&&ck.startsWith(k)))B.push(c);
     else if(c.searchableText.indexOf(q)>-1)C.push(c);
@@ -836,13 +844,13 @@ function onManualInput(){
   if(!ddList.length){closeDD();return;}
   const dd=$('caseDD');
   dd.innerHTML=ddList.map((r,i)=>{
-    const cj=String(r.comp).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const l1=[r.caseno,T(r.partyname)].filter(Boolean).join(' · ')||'—';
-    const l2=[T(r.ps),T(r.section)].filter(Boolean).join(' · ')||'—';
+    const cj=String(r.caseno).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    const party=T(r.partyname)||'—';
+    const l2=[T(r.section)?'u/s '+T(r.section):'',r.ccno?'CC '+r.ccno:''].filter(Boolean).join(' · ')||'—';
     const tick=r.verified?' <span class="pill pill-v">✓</span>':r.src==='manual'?' <span class="pill pill-e">New</span>':'';
-    return '<div class="di" data-comp="'+String(r.comp).replace(/"/g,'&quot;')+'" onmousedown="selDD(\''+cj+'\')">'
-      +'<span class="di-no">'+esc(r.comp)+'</span>'
-      +'<span class="di-bd"><div class="di-cn">'+esc(l1)+tick+'</div><div class="di-pt">'+esc(l2)+'</div></span></div>';
+    return '<div class="di" data-cno="'+String(r.caseno).replace(/"/g,'&quot;')+'" onmousedown="selDD(\''+cj+'\')">'
+      +'<span class="di-no">'+esc(r.caseno)+'</span>'
+      +'<span class="di-bd"><div class="di-cn">'+esc(party)+tick+'</div><div class="di-pt">'+esc(l2)+'</div></span></div>';
   }).join('');
   dd.style.display='block';
 }
@@ -850,7 +858,7 @@ function onManualKeyDown(e){
   const dd=$('caseDD'),items=dd.querySelectorAll('.di');
   if(e.key==='Enter'){
     e.preventDefault();
-    if(ddIdx>=0&&items[ddIdx])selDD(items[ddIdx].dataset.comp);
+    if(ddIdx>=0&&items[ddIdx])selDD(items[ddIdx].dataset.cno);
     else manualAction('VERIFY');
     return;
   }
@@ -860,8 +868,8 @@ function onManualKeyDown(e){
   else if(e.key==='Escape')closeDD();
 }
 function updDDHL(items){items.forEach((el,i)=>{el.classList.toggle('act',i===ddIdx);if(i===ddIdx)el.scrollIntoView({block:'nearest'});});}
-function selDD(comp){
-  $('manualCaseInput').value=comp;closeDD();
+function selDD(cno){
+  $('manualCaseInput').value=cno;closeDD();
   manualAction('VERIFY');
 }
 function closeDD(){$('caseDD').style.display='none';ddIdx=-1;}
@@ -869,37 +877,32 @@ document.addEventListener('click',e=>{if(!e.target.closest('.dwrap'))closeDD();}
 
 async function manualAction(mode){
   const raw=$('manualCaseInput').value.trim();
-  if(!raw){showMS('⚠️ Computer No enter karo','err');$('manualCaseInput').focus();return;}
+  if(!raw){showMS('⚠️ Case No enter karo','err');$('manualCaseInput').focus();return;}
   if(!cData.length){showMS('⚠️ Data nahi. Excel upload karo','err');return;}
   const rec=findByNo(raw);
   if(!rec){
-    showMS('❌ Not Found: '+raw+' — Excel list mein nahi. New Entry karna hai?','err');
     _pendingNew=raw;
-    const el=$('manualStatus');
-    el.innerHTML=esc('❌ Not Found: '+raw)+'<br><button class="btn" style="margin-top:9px" onclick="openNewEntry({comp:\''+esc(raw).replace(/'/g,'')+'\'})">➕ New Entry banao</button>';
+    const el=$('manualStatus');el.className='smsg s-err';
+    el.innerHTML=esc('❌ Not Found: '+raw)+' — Excel list mein nahi'
+      +'<br><button class="btn" style="margin-top:9px" onclick="openNewEntry({caseno:\''+esc(raw).replace(/'/g,'')+'\'})">➕ New Entry banao</button>';
     speak('Not found');haptic();
     return;
   }
-  if(rec.verified){
-    showMS('ℹ️ Already Verified: '+rec.comp+' ('+fmtDT(rec.vdate)+')','info');
-    speak('Already verified');
-    $('manualCaseInput').value='';closeDD();
-    if(aFilter!=='all'&&kindOf(rec)!==aFilter)setFilter('all');
-    else drawTable(getFiltered());
-    scrollToFile(rec.comp);
-    return;
-  }
-  rec.verified=1;rec.vdate=new Date().toISOString();
-  rec.searchableText=gSrch(rec);
-  await idbPut(strip(rec));
-  showMS('✅ VERIFIED: '+rec.comp+' — '+(T(rec.partyname)||rec.caseno||''),'ok');
-  speak('File verified');haptic();
+  const already=!!rec.verified;
+  if(!already){
+    rec.verified=1;rec.vdate=new Date().toISOString();
+    rec.searchableText=gSrch(rec);
+    await idbPut(strip(rec));
+    speak('File verified');haptic();
+  }else speak('Already verified');
+  showMS((already?'ℹ️ Already Verified: ':'✅ VERIFIED: ')+rec.caseno+' — '+(T(rec.partyname)||''),already?'info':'ok');
   $('manualCaseInput').value='';closeDD();
-  // agar filter us case ko chhupa raha hai to All par le aao, phir us row par jao
+  // filter case ko chhupa raha ho to All par le aao, phir us row par
   if(aFilter!=='all'&&kindOf(rec)!==aFilter)setFilter('all');
   else drawTable(getFiltered());
-  updateDash();scrollToFile(rec.comp);
+  updateDash();scrollToFile(rec.caseno);
 }
+
 // Chipka hua button — seedha Verification bar par le jaata hai
 function jumpVerify(){
   const sec=$('verifySec');
@@ -911,57 +914,59 @@ function jumpVerify(){
 // NEW ENTRY MODAL
 // ════════════════════════════════════════
 function openNewEntry(pre){
-  pre=pre&&pre.comp!==undefined?pre:{comp:($('manualCaseInput').value||'').trim()};
+  pre=pre&&(pre.caseno!==undefined)?pre:{caseno:($('manualCaseInput').value||'').trim()};
   $('ne-title').textContent=pre.id?'✏️ Edit Entry':'➕ New Entry';
   $('ne-id').value=pre.id||'';
-  $('ne-comp').value=pre.comp||'';$('ne-case').value=pre.caseno||'';
-  $('ne-party').value=pre.partyname||'';$('ne-ps').value=pre.ps||'';
-  $('ne-sec').value=pre.section||'';$('ne-rem').value=pre.remark||'';
+  $('ne-case').value=pre.caseno||'';$('ne-party').value=pre.partyname||'';
+  $('ne-sec').value=pre.section||'';$('ne-cc').value=pre.ccno||'';
+  $('ne-sr').value=pre.srno||'';$('ne-rem').value=pre.remark||'';
   $('neModal').classList.add('on');
-  setTimeout(()=>$('ne-comp').focus(),260);
+  setTimeout(()=>$('ne-case').focus(),260);
 }
 function closeNE(){$('neModal').classList.remove('on');}
 $('neModal').addEventListener('click',function(e){if(e.target===this)closeNE();});
 
 async function saveNewEntry(again){
-  const comp=$('ne-comp').value.trim();
-  if(!comp){showToast('⚠️ Computer No zaroori hai','w');$('ne-comp').focus();return;}
+  const caseno=$('ne-case').value.trim();
+  if(!caseno){showToast('⚠️ Case No zaroori hai','w');$('ne-case').focus();return;}
   const id=$('ne-id').value;
-  const f={comp,caseno:$('ne-case').value.trim(),partyname:$('ne-party').value.trim(),
-    ps:$('ne-ps').value.trim(),section:$('ne-sec').value.trim(),remark:$('ne-rem').value.trim()};
+  const f={caseno,partyname:$('ne-party').value.trim(),section:$('ne-sec').value.trim(),
+    ccno:$('ne-cc').value.trim(),srno:$('ne-sr').value.trim(),remark:$('ne-rem').value.trim()};
   if(id){
     const c=cData.find(x=>x.id===id);
     if(c){Object.assign(c,f);c.searchableText=gSrch(c);await idbPut(strip(c));}
     reindex();drawTable(getFiltered());updateDash();closeNE();
-    showToast('✅ Update ho gaya: '+comp);return;
+    showToast('✅ Update ho gaya: '+caseno);return;
   }
-  const dup=findByNo(comp);
+  const dup=findByNo(caseno);
   if(dup){
-    closeNE();showToast('ℹ️ '+comp+' pehle se list mein hai','w');
-    setTimeout(()=>openCaseDetail(dup.comp),300);return;
+    closeNE();showToast('ℹ️ '+caseno+' pehle se list mein hai','w');
+    setTimeout(()=>openCaseDetail(dup.caseno),300);return;
   }
-  const c=Object.assign({id:uid(),src:'manual',verified:1,vdate:new Date().toISOString(),srno:''},f);
+  const c=Object.assign({id:uid(),src:'manual',verified:1,vdate:new Date().toISOString(),
+    ord:1e9+cData.filter(x=>x.src==='manual').length},f);
   c.searchableText=gSrch(c);
   cData.push(c);reindex();
   await idbPut(strip(c));
   drawTable(getFiltered());updateDash();
-  showToast('✅ New Entry add: '+comp);speak('New entry added');haptic();
-  if(again){openNewEntry({comp:''});}else closeNE();
+  showToast('✅ New Entry add: '+caseno);speak('New entry added');haptic();
+  if(again){openNewEntry({caseno:''});}else{closeNE();scrollToFile(caseno);}
 }
 
 // ════════════════════════════════════════
 // CASE DETAIL MODAL
 // ════════════════════════════════════════
-let _cdComp=null, _pendingNew='';
-function openCaseDetail(comp){
-  const r=findByNo(comp);if(!r)return;
-  _cdComp=r.comp;
+let _cdNo=null;
+function openCaseDetail(cno){
+  const r=findByNo(cno);if(!r)return;
+  _cdNo=r.caseno;
   const k=kindOf(r);
-  $('cd-title').textContent='📁 Computer No. '+r.comp;
+  $('cd-title').textContent='📁 Case No. '+r.caseno;
   $('cd-sub').textContent=T(r.partyname)||'';
   const rows=[
-    ['Case No',r.caseno||'—'],['Party',T(r.partyname)||'—'],['Section',T(r.section)||'—'],['PS',T(r.ps)||'—'],
-    ['Source',r.src==='manual'?'➕ New Entry (Excel list mein nahi)':'📋 CIS Excel List'],
+    ['Sr.No',r.srno||'—'],['Case No',r.caseno],['Name Party',T(r.partyname)||'—'],
+    ['u/s',T(r.section)||'—'],['CC No',r.ccno||'—'],
+    ['Source',r.src==='manual'?'➕ New Entry (list mein nahi)':'📋 CIS Excel List'],
     ['Status',k==='verified'?'✅ Verified':k==='pending'?'⏳ Pending':'➕ New Entry'],
     ['Verify Date',r.vdate?fmtDT(r.vdate):'—']
   ];
@@ -975,31 +980,33 @@ function openCaseDetail(comp){
   $('cd-btns').innerHTML=b;
   $('caseDetailModal').classList.add('on');
 }
-function closeCaseDetail(){$('caseDetailModal').classList.remove('on');_cdComp=null;}
+function closeCaseDetail(){$('caseDetailModal').classList.remove('on');_cdNo=null;}
 $('caseDetailModal').addEventListener('click',function(e){if(e.target===this)closeCaseDetail();});
 async function cdVerify(on){
-  const r=findByNo(_cdComp);if(!r)return;
+  const r=findByNo(_cdNo);if(!r)return;
   r.remark=$('cd-rem').value.trim();
   r.verified=on?1:0;r.vdate=on?new Date().toISOString():'';
   r.searchableText=gSrch(r);
   await idbPut(strip(r));
-  const comp=r.comp;
+  const cno=r.caseno;
   closeCaseDetail();
-  drawTable(getFiltered());updateDash();scrollToFile(comp);
-  showToast(on?'✅ Verified: '+comp:'↩ Verify undo: '+comp,on?'':'w');
+  if(aFilter!=='all'&&kindOf(r)!==aFilter)setFilter('all');
+  else drawTable(getFiltered());
+  updateDash();scrollToFile(cno);
+  showToast(on?'✅ Verified: '+cno:'↩ Verify undo: '+cno,on?'':'w');
   if(on){speak('File verified');haptic();}
 }
 function cdEdit(){
-  const r=findByNo(_cdComp);if(!r)return;
+  const r=findByNo(_cdNo);if(!r)return;
   closeCaseDetail();openNewEntry(r);
 }
 async function cdDel(){
-  const r=findByNo(_cdComp);if(!r)return;
-  if(!confirm('Computer No. '+r.comp+' ki entry hatani hai?'))return;
+  const r=findByNo(_cdNo);if(!r)return;
+  if(!confirm('Case No. '+r.caseno+' ki entry hatani hai?'))return;
   cData=cData.filter(x=>x.id!==r.id);
   await idbDel(r.id);reindex();
   closeCaseDetail();drawTable(getFiltered());updateDash();
-  showToast('🗑 Hata diya: '+r.comp,'d');
+  showToast('🗑 Hata diya: '+r.caseno,'d');
 }
 
 // ════════════════════════════════════════
@@ -1025,14 +1032,14 @@ const needXJS=()=>window.ExcelJS?Promise.resolve():loadLib(['libs/exceljs.min.js
 // ════════════════════════════════════════
 // EXCEL UPLOAD
 // ════════════════════════════════════════
+// CIS list ke columns — isi order mein: Sr.No | Case No | Name Party | u/s | CC No | Remark
 const FIELDS=[
-  {k:'comp',l:'Computer No',req:1,kw:['computer','कंप्यूटर','कम्प्यूटर','कंप्युटर','comp no','compno','cno','कं.सं']},
-  {k:'caseno',l:'Case No',kw:['case no','case number','वाद संख्या','वाद सं','मुकदमा','केस न','reg no','registration','पंजीकरण','case']},
-  {k:'partyname',l:'Party Name',kw:['party','parties','पक्षकार','वादी','प्रतिवादी','title','शीर्षक','बनाम','petitioner','accused','अभियुक्त','name']},
-  {k:'ps',l:'PS / थाना',kw:['police station','p.s','थाना','ps','station']},
-  {k:'section',l:'Section / धारा',kw:['section','u/s','धारा','act','अधिनियम','offence','अपराध']},
-  {k:'remark',l:'Remark',kw:['stage','चरण','purpose','प्रयोजन','status','स्थिति','remark','टिप्पणी','note']},
-  {k:'srno',l:'Sr No',kw:['sr','क्रम','s.no','serial']}
+  {k:'srno',l:'Sr.No',kw:['sr.no','sr no','s.no','sno','serial','क्रम','क्र.','क्रमांक']},
+  {k:'caseno',l:'Case No',req:1,kw:['case no','case number','case_no','वाद संख्या','वाद सं','मुकदमा सं','केस न','caseno','case']},
+  {k:'partyname',l:'Name Party',kw:['name party','name of part','party name','पक्षकार','वादी','प्रतिवादी','बनाम','title','party','name']},
+  {k:'section',l:'u/s',kw:['u/s','under section','धारा','section','act','अधिनियम','अपराध','offence']},
+  {k:'ccno',l:'CC No',kw:['cc no','cc.no','ccno','cc','computer','कंप्यूटर','कम्प्यूटर','कंप्युटर','सी.सी']},
+  {k:'remark',l:'Remark',kw:['remark','टिप्पणी','note','stage','चरण','purpose','प्रयोजन','status','स्थिति']}
 ];
 let IMP=null;
 function guessCols(head){
@@ -1049,6 +1056,13 @@ function guessCols(head){
     }
     if(best>-1)used.add(best);
     out[f.k]=best;
+  }
+  // heading match na ho to file ke apne order se bhar do (Sr.No, Case No, Name Party, u/s, CC No, Remark)
+  let col=0;
+  for(const f of FIELDS){
+    if(out[f.k]>-1)continue;
+    while(col<H.length&&used.has(col))col++;
+    if(col<H.length){out[f.k]=col;used.add(col);col++;}
   }
   return out;
 }
@@ -1093,10 +1107,24 @@ function headChosen(){
   const g=guessCols(head);
   $('imMap').innerHTML=FIELDS.map(f=>
     '<div class="maprow"><label>'+f.l+(f.req?' <b>*</b>':'')+'</label><select data-fk="'+f.k+'">'+opts+'</select></div>').join('');
-  FIELDS.forEach(f=>{const s=document.querySelector('#imMap select[data-fk="'+f.k+'"]');if(s)s.value=g[f.k];});
+  FIELDS.forEach(f=>{
+    const sel=document.querySelector('#imMap select[data-fk="'+f.k+'"]');
+    if(sel){sel.value=g[f.k];sel.onchange=mapPreview;}
+  });
   const body=rows.slice(hi+1,hi+4);
   $('imPrev').innerHTML='<table><tr>'+head.map(h=>'<th>'+esc(String(h||'').slice(0,20))+'</th>').join('')+'</tr>'
     +body.map(r=>'<tr>'+head.map((_,i)=>'<td>'+esc(String(r[i]||'').slice(0,24))+'</td>').join('')+'</tr>').join('')+'</table>';
+  mapPreview();
+}
+// mapping ke hisaab se pehli row aise dikhegi
+function mapPreview(){
+  const box=$('mapPrev');if(!box||!IMP)return;
+  const map={};document.querySelectorAll('#imMap select').forEach(s=>map[s.dataset.fk]=+s.value);
+  const r=IMP.rows[IMP.hi+1]||[];
+  box.innerHTML='<b>Aisa dikhega</b><span>'+FIELDS.map(f=>{
+    const v=map[f.k]>=0?String(r[map[f.k]]||''):'';
+    return '<i style="font-style:normal;color:var(--mu)">'+f.l+':</i> '+esc(v||'—');
+  }).join(' &nbsp;·&nbsp; ')+'</span>';
 }
 $('imSheet').addEventListener('change',sheetChosen);
 $('imHead').addEventListener('change',headChosen);
@@ -1104,25 +1132,29 @@ $('imHead').addEventListener('change',headChosen);
 async function uploadExcel(){
   if(!IMP||!IMP.rows){showToast('⚠️ Pehle file select karo','w');return;}
   const map={};document.querySelectorAll('#imMap select').forEach(s=>map[s.dataset.fk]=+s.value);
-  if(map.comp<0){upStatus('⚠️ Computer No wala column choose karo','err');return;}
+  if(map.caseno<0){upStatus('⚠️ Case No wala column choose karo','err');return;}
   const btn=$('upBtn');btn.disabled=true;btn.textContent='⏳ Uploading...';
   $('imProgWrap').style.display='block';
   const replace=cData.length?confirm('Purana data hata kar naya lagayein?\n\nOK = purana hatega\nCancel = naye cases jud jayenge'):false;
-  if(replace){cData=[];await idbClr();byComp.clear();byDig.clear();}
-  const seen=new Set(cData.map(c=>nKey(c.comp)));
+  if(replace){cData=[];await idbClr();byCase.clear();byDig.clear();}
+  const seen=new Set(cData.map(c=>nKey(c.caseno)));
   const rows=IMP.rows.slice(IMP.hi+1);
   const val=(r,i)=>i<0?'':String(r[i]==null?'':r[i]).replace(/\s+/g,' ').trim();
-  const fresh=[];let dup=0,cut=0;
+  const fresh=[];let dup=0,cut=0,n=0;
+  const base=cData.length;
   for(const r of rows){
-    const comp=val(r,map.comp);
-    if(!comp)continue;
+    const caseno=val(r,map.caseno);
+    if(!caseno)continue;
     if(cData.length+fresh.length>=20000){cut++;continue;}
-    const k=nKey(comp);
+    const k=nKey(caseno);
     if(seen.has(k)){dup++;continue;}
     seen.add(k);
-    const c={id:uid(),comp,src:'cis',verified:0,vdate:'',
-      srno:val(r,map.srno),caseno:val(r,map.caseno),partyname:val(r,map.partyname),
-      ps:val(r,map.ps),section:val(r,map.section),remark:val(r,map.remark)};
+    n++;
+    const c={id:uid(),caseno,src:'cis',verified:0,vdate:'',
+      ord:base+n,                                   // file ka order — table isi mein rahegi
+      srno:val(r,map.srno)||String(base+n),          // list ka apna serial, kabhi badalta nahi
+      partyname:val(r,map.partyname),section:val(r,map.section),
+      ccno:val(r,map.ccno),remark:val(r,map.remark)};
     c.searchableText=gSrch(c);
     fresh.push(c);
   }
@@ -1141,11 +1173,11 @@ async function uploadExcel(){
 // ════════════════════════════════════════
 // EXCEL DOWNLOAD
 // ════════════════════════════════════════
-const COLS=[{h:'Sr',w:6},{h:'Computer No',w:14},{h:'Case No',w:18},{h:'Party Name',w:32},
-  {h:'Section',w:20},{h:'PS',w:14},{h:'Source',w:10},{h:'Status',w:12},{h:'Verify Date',w:18},{h:'Remark',w:24}];
+const COLS=[{h:'Sr.No',w:8},{h:'Case No',w:18},{h:'Name Party',w:36},{h:'u/s',w:20},
+  {h:'CC No',w:14},{h:'Source',w:11},{h:'Status',w:12},{h:'Verify Date',w:18},{h:'Remark',w:24}];
 function rowFor(c,i){
   const k=kindOf(c);
-  return[i+1,c.comp||'',c.caseno||'',T(c.partyname),T(c.section),T(c.ps),
+  return[c.srno||(i+1),c.caseno||'',T(c.partyname),T(c.section),c.ccno||'',
     c.src==='manual'?'New Entry':'CIS',
     k==='verified'?'Verified':k==='pending'?'Pending':'New Entry',
     c.vdate?fmtDT(c.vdate):'',c.remark||''];

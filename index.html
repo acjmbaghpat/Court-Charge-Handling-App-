@@ -160,6 +160,17 @@ tr:hover td{background:#f0f4ff}
 .ft-ex{background:#fef2f2;border-color:#fca5a5;color:var(--danh)}
 .ft-ex .tc{color:var(--danh)}
 
+/* ══════════ DATE + VERSION BAR ══════════ */
+.dvbar{background:var(--sur);border:1px solid rgba(221,228,240,.9);border-radius:14px;
+  padding:10px 12px;margin-bottom:12px;box-shadow:var(--ss);
+  display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.dvbar label{display:block;font-size:10px;font-weight:700;color:var(--mu);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px}
+.dvbar select{margin-top:0;padding:9px 11px;font-size:13.5px;font-weight:700;
+  background:#f1f5fb;border-color:#dde4f0}
+#dvInfo{grid-column:span 2;font-size:10.5px;color:var(--mu2,#94a3b8);font-weight:500;
+  color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
 /* ══════════ VERIFICATION BAR ══════════ */
 #verifySec{border:1.5px solid #93b4fd;background:linear-gradient(135deg,#f5f9ff,#fff)}
 #verifySec h3{color:var(--p)}
@@ -284,6 +295,13 @@ tr:hover td{background:#f0f4ff}
 <div class="tab-c on" id="cv-tab">
 <div class="cnt">
 
+  <!-- Date + Version -->
+  <div class="dvbar">
+    <div><label>📅 List Date</label><select id="dsDate" onchange="onDateChange()"></select></div>
+    <div><label>🗂️ Version</label><select id="dsVer" onchange="onVerChange()"></select></div>
+    <div id="dvInfo"></div>
+  </div>
+
   <!-- Dashboard -->
   <div class="dash">
     <div class="card">📁 CIS<br><span id="totalCount">0</span></div>
@@ -356,6 +374,7 @@ tr:hover td{background:#f0f4ff}
         <div class="pbar"><i id="pbar"></i></div>
       </div>
       <div class="card" style="grid-column:span 2">💾 Storage<br><span id="storageUsage" style="font-size:12px;color:var(--mu)">...</span></div>
+      <div class="card" style="grid-column:span 4">🗂️ Sab Uploads<br><span id="dsInfo" style="font-size:12px;color:var(--mu)">—</span></div>
     </div>
     <div style="color:var(--mu);font-size:11.5px;margin-top:12px;font-weight:500">
       Progress = CIS list ki kitni files physically mil gayi.
@@ -365,6 +384,14 @@ tr:hover td{background:#f0f4ff}
   <!-- Excel Upload -->
   <div class="sec up-sec">
     <h3>📥 CIS Excel Upload</h3>
+    <label class="fl" style="margin-top:0">Is list ki date</label>
+    <input type="date" id="upDate">
+    <div class="jo-row" style="margin-top:8px">
+      <button class="jo-btn t" id="addToCur" onclick="document.getElementById('addToCur').classList.toggle('on')">➕ Isi version mein jodo</button>
+    </div>
+    <div style="color:var(--mu);font-size:11px;margin:8px 0 4px;font-weight:500">
+      Band rakho = har upload ki nayi version (V1, V2, V3...). ON karo = chalu version mein hi cases jud jayenge (list do file mein aayi ho to).
+    </div>
     <input type="file" id="excelFile" accept=".xlsx,.xls,.ods,.csv">
     <div id="mapBox" style="display:none;margin-top:12px">
       <label class="fl">Sheet</label><select id="imSheet"></select>
@@ -434,6 +461,7 @@ tr:hover td{background:#f0f4ff}
     <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="importBackup(event)">
     <div id="backupStatus" class="smsg"></div>
     <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
+      Excel usi date + version ka banta hai jo upar bar mein chuna hua hai. Backup mein <b>sab dates ka poora data</b> aata hai.<br>
       Excel mein Summary + All sheet hamesha. Upar wala button ON ho to Pending / Verified / New alag sheets bhi banti hain — 20,000 cases par isme 15-20 second lagte hain, band rakho to 5-6 second.
     </div>
   </div>
@@ -513,7 +541,7 @@ function haptic(){try{navigator.vibrate&&navigator.vibrate(35);}catch(e){}}
 // ════════════════════════════════════════
 // IndexedDB
 // ════════════════════════════════════════
-const DB_NAME='ChargeVerifyDB', DB_VER=1, SC='cases', SM='metadata';
+const DB_NAME='ChargeVerifyDB', DB_VER=2, SC='cases', SM='metadata';
 let db=null, memMode=false;
 function openDB(){
   return new Promise(res=>{
@@ -522,8 +550,11 @@ function openDB(){
       if(!window.indexedDB)return fin(false);
       const r=indexedDB.open(DB_NAME,DB_VER);
       r.onupgradeneeded=e=>{
-        const d=e.target.result;
-        if(!d.objectStoreNames.contains(SC))d.createObjectStore(SC,{keyPath:'id'});
+        const d=e.target.result,tr=e.target.transaction;
+        let st;
+        if(!d.objectStoreNames.contains(SC))st=d.createObjectStore(SC,{keyPath:'id'});
+        else st=tr.objectStore(SC);
+        if(!st.indexNames.contains('dk'))st.createIndex('dk','dk');   // dk = date + version
         if(!d.objectStoreNames.contains(SM))d.createObjectStore(SM,{keyPath:'key'});
       };
       r.onsuccess=e=>{db=e.target.result;fin(true);};
@@ -540,15 +571,41 @@ function idbTx(store,mode,fn){
     r.onsuccess=()=>res(r.result);r.onerror=()=>res(null);
   });
 }
-const idbAll =()=>idbTx(SC,'readonly',s=>s.getAll()).then(r=>r||[]);
-const idbPut =o=>idbTx(SC,'readwrite',s=>s.put(o));
-const idbDel =id=>idbTx(SC,'readwrite',s=>s.delete(id));
-const idbClr =()=>idbTx(SC,'readwrite',s=>s.clear());
-const idbGM  =k=>idbTx(SM,'readonly',s=>s.get(k)).then(r=>r?r.value:null);
-const idbSM  =(k,v)=>idbTx(SM,'readwrite',s=>s.put({key:k,value:v}));
+// IndexedDB na mile (private mode / purana WebView) to sab kuch memory mein — app phir bhi chalti hai
+let MEM=[], MEMI=new Map(), MEMM={};
+function memPut(o){const i=MEMI.get(o.id);if(i!==undefined)MEM[i]=o;else{MEMI.set(o.id,MEM.length);MEM.push(o);}}
+function memReindex(){MEMI.clear();MEM.forEach((c,i)=>MEMI.set(c.id,i));}
+const idbAll =()=>db?idbTx(SC,'readonly',s=>s.getAll()).then(r=>r||[]):Promise.resolve(MEM.slice());
+function idbByDk(dk){
+  return new Promise(res=>{
+    if(!db)return res(MEM.filter(c=>c.dk===dk).map(c=>Object.assign({},c)));
+    try{const r=db.transaction(SC,'readonly').objectStore(SC).index('dk').getAll(dk);
+      r.onsuccess=()=>res(r.result||[]);r.onerror=()=>res([]);
+    }catch(e){res([]);}
+  });
+}
+function idbPut(o){
+  if(!db){memPut(o);return Promise.resolve();}
+  return idbTx(SC,'readwrite',s=>s.put(o));
+}
+function idbDel(id){
+  if(!db){MEM=MEM.filter(x=>x.id!==id);memReindex();return Promise.resolve();}
+  return idbTx(SC,'readwrite',s=>s.delete(id));
+}
+function idbClr(){
+  if(!db){MEM=[];MEMI.clear();return Promise.resolve();}
+  return idbTx(SC,'readwrite',s=>s.clear());
+}
+const idbGM =k=>db?idbTx(SM,'readonly',s=>s.get(k)).then(r=>r?r.value:null):Promise.resolve(MEMM[k]||null);
+const idbSM =(k,v)=>{if(!db){MEMM[k]=v;return Promise.resolve();}return idbTx(SM,'readwrite',s=>s.put({key:k,value:v}));};
 function idbPutMany(arr,onProg){
   return new Promise(async res=>{
-    if(!db||!arr.length)return res();
+    if(!arr.length)return res();
+    if(!db){
+      arr.forEach(c=>memPut(strip(c)));
+      if(onProg)onProg(arr.length);
+      return res();
+    }
     const CH=800;
     for(let i=0;i<arr.length;i+=CH){
       await new Promise(ok=>{
@@ -707,7 +764,17 @@ function T(s){
 // ord    = file mein row ka original order — table isi order mein dikhti hai
 let cData=[], aFilter='all', shown=0, PAGE=150, ddIdx=-1, ddList=[];
 let byCase=new Map(), byDig=new Map();
-let META={court:'',off:'',date:'',tr:0,sf:0,dictTr:'',dictSf:''};
+let META={court:'',off:'',date:'',tr:0,sf:0,dictTr:'',dictSf:'',activeDk:''};
+// har upload ka apna dataset — { dk, date(yyyy-mm-dd), ver, count, at, file }
+let DSETS=[];
+const dkOf=(date,ver)=>date+'#v'+ver;
+const dsGet=dk=>DSETS.find(d=>d.dk===dk)||null;
+const dsDates=()=>[...new Set(DSETS.map(d=>d.date))].sort().reverse();
+const dsOfDate=dt=>DSETS.filter(d=>d.date===dt).sort((a,b)=>b.ver-a.ver);
+function dsNextVer(dt){const l=dsOfDate(dt);return l.length?l[0].ver+1:1;}
+function curDs(){return dsGet(META.activeDk);}
+function dFmt(dt){return dt?dt.split('-').reverse().join('-'):'';}
+async function saveDsets(){await idbSM('datasets',DSETS);}
 const rTimers={};
 function gSrch(r){return[r.srno,r.caseno,r.partyname,r.ps,r.ccno,r.section,r.remark].join(' ').toLowerCase();}
 function reindex(){
@@ -725,6 +792,16 @@ function findByNo(v){
 }
 function kindOf(c){return c.src==='manual'?'extra':(c.verified?'verified':'pending');}
 async function saveMeta(){await idbSM('meta',META);}
+// koi dataset na ho to aaj ka bana do (New Entry ke liye ghar chahiye)
+async function ensureDataset(){
+  if(curDs())return curDs();
+  const dt=new Date().toISOString().slice(0,10);
+  const ds={dk:dkOf(dt,1),date:dt,ver:1,count:0,at:new Date().toISOString(),file:'Manual'};
+  DSETS.push(ds);META.activeDk=ds.dk;
+  await saveDsets();await saveMeta();
+  return ds;
+}
+async function dsCount(dk,n){const d=dsGet(dk);if(d){d.count=n;await saveDsets();}}
 
 // ════════════════════════════════════════
 // DASHBOARD
@@ -953,12 +1030,14 @@ async function saveNewEntry(again){
     closeNE();showToast('ℹ️ '+caseno+' pehle se list mein hai','w');
     setTimeout(()=>openCaseDetail(dup.caseno),300);return;
   }
-  const c=Object.assign({id:uid(),src:'manual',verified:1,vdate:new Date().toISOString(),
+  const ds=await ensureDataset();
+  const c=Object.assign({id:uid(),dk:ds.dk,src:'manual',verified:1,vdate:new Date().toISOString(),
     ord:1e9+cData.filter(x=>x.src==='manual').length},f);
   c.searchableText=gSrch(c);
   cData.push(c);reindex();
   await idbPut(strip(c));
-  drawTable(getFiltered());updateDash();
+  await dsCount(ds.dk,cData.length);
+  drawTable(getFiltered());updateDash();updateSU();renderDVBar();
   showToast('✅ New Entry add: '+caseno);speak('New entry added');haptic();
   if(again){openNewEntry({caseno:''});}else{closeNE();scrollToFile(caseno);}
 }
@@ -1015,7 +1094,8 @@ async function cdDel(){
   if(!confirm('Case No. '+r.caseno+' ki entry hatani hai?'))return;
   cData=cData.filter(x=>x.id!==r.id);
   await idbDel(r.id);reindex();
-  closeCaseDetail();drawTable(getFiltered());updateDash();
+  if(META.activeDk)await dsCount(META.activeDk,cData.length);
+  closeCaseDetail();drawTable(getFiltered());updateDash();updateSU();renderDVBar();
   showToast('🗑 Hata diya: '+r.caseno,'d');
 }
 
@@ -1146,10 +1226,19 @@ async function uploadExcel(){
   if(!IMP||!IMP.rows){showToast('⚠️ Pehle file select karo','w');return;}
   const map={};document.querySelectorAll('#imMap select').forEach(s=>map[s.dataset.fk]=+s.value);
   if(map.caseno<0){upStatus('⚠️ Case No wala column choose karo','err');return;}
+  const dt=$('upDate').value||new Date().toISOString().slice(0,10);
+  const addMode=$('addToCur').classList.contains('on')&&curDs()&&curDs().date===dt;
   const btn=$('upBtn');btn.disabled=true;btn.textContent='⏳ Uploading...';
   $('imProgWrap').style.display='block';
-  const replace=cData.length?confirm('Purana data hata kar naya lagayein?\n\nOK = purana hatega\nCancel = naye cases jud jayenge'):false;
-  if(replace){cData=[];await idbClr();byCase.clear();byDig.clear();}
+
+  let ds;
+  if(addMode){ds=curDs();}                                  // isi version mein jodo
+  else{                                                      // nayi version banao
+    const ver=dsNextVer(dt);
+    ds={dk:dkOf(dt,ver),date:dt,ver,count:0,at:new Date().toISOString(),file:IMP.name||''};
+    DSETS.push(ds);META.activeDk=ds.dk;
+    if(!addMode)cData=[];                                    // nayi version = khali list
+  }
   const seen=new Set(cData.map(c=>nKey(c.caseno)));
   const rows=IMP.rows.slice(IMP.hi+1);
   const val=(r,i)=>i<0?'':String(r[i]==null?'':r[i]).replace(/\s+/g,' ').trim();
@@ -1163,24 +1252,62 @@ async function uploadExcel(){
     if(seen.has(k)){dup++;continue;}
     seen.add(k);
     n++;
-    const c={id:uid(),caseno,src:'cis',verified:0,vdate:'',
-      ord:base+n,                                   // file ka order — table isi mein rahegi
-      srno:val(r,map.srno)||String(base+n),          // list ka apna serial, kabhi badalta nahi
+    const c={id:uid(),dk:ds.dk,caseno,src:'cis',verified:0,vdate:'',
+      ord:base+n,
+      srno:val(r,map.srno)||String(base+n),
       partyname:val(r,map.partyname),ps:val(r,map.ps),ccno:val(r,map.ccno),
       section:val(r,map.section),remark:val(r,map.remark)};
     c.searchableText=gSrch(c);
     fresh.push(c);
   }
-  await idbPutMany(fresh,n=>{$('imProg').style.width=Math.round(n*100/fresh.length)+'%';});
+  await idbPutMany(fresh,n2=>{$('imProg').style.width=Math.round(n2*100/fresh.length)+'%';});
   cData=cData.concat(fresh);
-  reindex();drawTable(getFiltered());updateDash();updateSU();
+  ds.count=cData.length;
+  await saveDsets();await saveMeta();
+  reindex();renderDVBar();drawTable(getFiltered());updateDash();updateSU();
   btn.disabled=false;btn.textContent='📤 Upload Excel';
   $('imProgWrap').style.display='none';$('imProg').style.width='0';
   $('mapBox').style.display='none';$('excelFile').value='';IMP=null;
-  let m='✅ '+fresh.length+' cases upload ho gaye';
+  let m='✅ '+fresh.length+' cases — '+dFmt(ds.date)+' · V'+ds.ver;
   if(dup)m+=' · '+dup+' duplicate chhode';
   if(cut)m+=' · 20,000 limit par '+cut+' rah gaye';
-  upStatus(m,'ok');showToast('✅ Upload: '+fresh.length+' cases');speak('Excel uploaded');
+  upStatus(m,'ok');showToast('✅ '+dFmt(ds.date)+' V'+ds.ver+' — '+fresh.length+' cases');speak('Excel uploaded');
+}
+
+// ════════════════════════════════════════
+// DATE + VERSION BAR
+// ════════════════════════════════════════
+function renderDVBar(){
+  const dSel=$('dsDate'),vSel=$('dsVer');
+  const dates=dsDates();
+  if(!dates.length){
+    dSel.innerHTML='<option>— koi upload nahi —</option>';
+    vSel.innerHTML='<option>—</option>';
+    $('dvInfo').textContent='Settings se CIS Excel upload karo';
+    return;
+  }
+  const cur=curDs();
+  const curDate=cur?cur.date:dates[0];
+  dSel.innerHTML=dates.map(d=>'<option value="'+d+'"'+(d===curDate?' selected':'')+'>'+dFmt(d)+'</option>').join('');
+  const vers=dsOfDate(curDate);
+  vSel.innerHTML=vers.map(v=>'<option value="'+v.dk+'"'+(cur&&v.dk===cur.dk?' selected':'')+'>V'+v.ver+' · '+v.count+' cases</option>').join('');
+  const c=curDs();
+  $('dvInfo').textContent=c?('📂 '+(c.file||'—')+' · upload '+fmtDT(c.at)):'';
+}
+async function onDateChange(){
+  const dt=$('dsDate').value;
+  const list=dsOfDate(dt);
+  if(list.length)await switchDataset(list[0].dk);
+}
+async function onVerChange(){await switchDataset($('dsVer').value);}
+async function switchDataset(dk){
+  if(!dsGet(dk))return;
+  META.activeDk=dk;await saveMeta();
+  const rows=await idbByDk(dk);
+  cData=rows.map(c=>{c.searchableText=gSrch(c);return c;});
+  const ds=dsGet(dk);if(ds&&ds.count!==cData.length){ds.count=cData.length;await saveDsets();}
+  reindex();renderDVBar();setFilter('all');updateDash();updateSU();
+  showToast('📅 '+dFmt(ds.date)+' · V'+ds.ver+' — '+cData.length+' cases');
 }
 
 // ════════════════════════════════════════
@@ -1217,12 +1344,16 @@ async function downloadExcel(){
     cData.forEach(c=>{const k=kindOf(c);if(k==='verified')v++;else if(k==='pending')p++;else e++;});
     const sum=wb.addWorksheet('Summary');
     sum.columns=[{width:30},{width:34}];
-    const t0=sum.addRow([(META.court||'Court')+' — Charge Verification']);
+    const ds=curDs();
+    const t0=sum.addRow([(META.court||'Court')+' — Charge Verification'
+      +(ds?('  |  '+dFmt(ds.date)+'  ·  V'+ds.ver):'')]);
     t0.font={name:'Nirmala UI',size:15,bold:true};sum.mergeCells('A1:B1');sum.addRow([]);
     const put=(a,b)=>{const r=sum.addRow([a,b]);r.font={name:'Nirmala UI',size:11};
       r.getCell(1).font={name:'Nirmala UI',size:11,bold:true,color:{argb:'FF444C5E'}};};
     put('Officer',META.off||'—');
-    put('Charge Date',META.date?META.date.split('-').reverse().join('-'):'—');
+    put('Charge Date',META.date?dFmt(META.date):'—');
+    put('List Date',ds?dFmt(ds.date):'—');
+    put('Version',ds?('V'+ds.ver+(ds.file?'  ('+ds.file+')':'')):'—');
     put('Report Date',fmtDT(new Date().toISOString()));
     sum.addRow([]);
     put('CIS Total',v+p);put('Verified (mil gayi)',v);put('Pending (nahi mili)',p);
@@ -1250,8 +1381,9 @@ async function downloadExcel(){
     }
     const buf=await wb.xlsx.writeBuffer();
     const d=new Date();
+    const tag=ds?(ds.date.replace(/-/g,'')+'_V'+ds.ver):(d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate()));
     dl(new Blob([buf],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),
-      'ChargeVerify_'+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'.xlsx');
+      'ChargeVerify_'+tag+'.xlsx');
     showToast('📊 Excel download ho gayi');
   }catch(err){
     console.error(err);
@@ -1259,7 +1391,9 @@ async function downloadExcel(){
     const C=exCols(),wU=cData.some(x=>x.section);
     const lines=[C.map(c=>q(c.h)).join(',')];
     cData.forEach((c,i)=>lines.push(rowFor(c,i,wU).map(q).join(',')));
-    dl(new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),'ChargeVerify.csv');
+    const ds2=curDs();
+    dl(new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),
+      'ChargeVerify_'+(ds2?ds2.date.replace(/-/g,'')+'_V'+ds2.ver:'all')+'.csv');
     showToast('CSV download kar di (Excel lib nahi mili)','w');
   }
   const dBtn2=$('dlBtn');if(dBtn2)dBtn2.textContent='📊 Download Excel';
@@ -1276,30 +1410,44 @@ function bkStatus(msg,type){
   const el=$('backupStatus');el.textContent=msg;el.className='smsg s-'+type;
   clearTimeout(el._t);el._t=setTimeout(()=>el.className='smsg',4000);
 }
-function exportBackup(){
+async function exportBackup(){
   try{
-    const bk={exportedAt:new Date().toISOString(),app:'ChargeVerify',meta:META,cases:cData.map(strip)};
+    bkStatus('⏳ Sab dates ka data ikattha kar rahe hain...','info');
+    const all=await idbAll();                       // har date, har version — poora data
+    const bk={exportedAt:new Date().toISOString(),app:'ChargeVerify',v:2,
+      meta:META,datasets:DSETS,cases:all.map(strip)};
     dl(new Blob([JSON.stringify(bk)],{type:'application/json'}),
       'ChargeVerifyBackup_'+new Date().toISOString().split('T')[0]+'.json');
-    bkStatus('✅ Backup export ho gaya!','ok');
+    bkStatus('✅ Backup ready — '+DSETS.length+' upload, '+all.length+' cases (sab dates)','ok');
   }catch(e){bkStatus('❌ Export fail: '+e,'err');}
 }
 async function importBackup(ev){
   const file=ev.target.files[0];if(!file)return;
   try{
+    bkStatus('⏳ Restore ho raha hai...','info');
     const bk=JSON.parse(await file.text());
     if(!bk.cases)throw 0;
-    if(!confirm('Restore karne par mojuda data hat jayega. Jari rakhein?'))return;
+    if(!confirm('Restore karne par mojuda saara data hat jayega. Jari rakhein?')){ev.target.value='';return;}
     await idbClr();
-    cData=bk.cases.map(c=>{c.searchableText=gSrch(c);return c;});
+    const all=bk.cases.map(c=>{if(!c.dk)c.dk='old#v1';return c;});
+    await idbPutMany(all);
     if(bk.meta)Object.assign(META,bk.meta);
-    await idbPutMany(cData);await saveMeta();
-    rebuildDicts();reindex();fillMeta();drawTable(getFiltered());updateDash();
-    bkStatus('✅ Restore ho gaya — '+cData.length+' cases','ok');
+    if(bk.datasets&&bk.datasets.length)DSETS=bk.datasets;
+    else{  // purana backup — sabko ek dataset mein daal do
+      DSETS=[{dk:'old#v1',date:new Date().toISOString().slice(0,10),ver:1,
+        count:all.length,at:new Date().toISOString(),file:'Restored'}];
+      META.activeDk='old#v1';
+    }
+    if(!dsGet(META.activeDk)&&DSETS.length)META.activeDk=DSETS[0].dk;
+    await saveDsets();await saveMeta();
+    rebuildDicts();fillMeta();
+    await switchDataset(META.activeDk);
+    bkStatus('✅ Restore — '+DSETS.length+' upload, '+all.length+' cases','ok');
     showToast('✅ Backup restore ho gaya!');
   }catch(e){bkStatus('❌ Restore fail — file sahi nahi hai','err');}
   ev.target.value='';
 }
+
 // ════════════════════════════════════════
 // TRANSLATE TAB
 // ════════════════════════════════════════
@@ -1338,10 +1486,12 @@ function switchTab(t){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 async function updateSU(){
+  const tot=DSETS.reduce((a,b)=>a+(b.count||0),0);
+  $('dsInfo').textContent=DSETS.length+' upload · '+tot+' cases (sab dates)';
   try{
     if(navigator.storage&&navigator.storage.estimate){
       const e=await navigator.storage.estimate();
-      $('storageUsage').textContent=(e.usage/1048576).toFixed(2)+'MB / '+(e.quota/1048576).toFixed(0)+'MB';
+      $('storageUsage').textContent=(e.usage/1048576).toFixed(1)+'MB / '+(e.quota/1048576).toFixed(0)+'MB';
     }else $('storageUsage').textContent=memMode?'Session only ⚠':'IndexedDB';
   }catch(e){$('storageUsage').textContent='IndexedDB';}
 }
@@ -1362,9 +1512,23 @@ window.onload=async()=>{
   if(!ok){$('stDot').className='warn';$('stDot').title='Storage nahi mila — sirf session';}
   const m=await idbGM('meta');
   if(m)Object.assign(META,m);
-  const rows=await idbAll();
-  cData=(rows||[]).map(c=>{c.searchableText=gSrch(c);return c;});
-  rebuildDicts();reindex();fillMeta();
+  DSETS=(await idbGM('datasets'))||[];
+  // purana single-list data ho to use ek dataset bana do
+  if(!DSETS.length){
+    const old=await idbAll();
+    if(old.length){
+      const dt=new Date().toISOString().slice(0,10);
+      DSETS=[{dk:dkOf(dt,1),date:dt,ver:1,count:old.length,at:new Date().toISOString(),file:'Purana data'}];
+      META.activeDk=DSETS[0].dk;
+      old.forEach(c=>{c.dk=DSETS[0].dk;});
+      await idbPutMany(old);await saveDsets();await saveMeta();
+    }
+  }
+  if(!dsGet(META.activeDk)&&DSETS.length)META.activeDk=DSETS.slice().sort((a,b)=>
+    (b.date+String(b.ver).padStart(4,'0')).localeCompare(a.date+String(a.ver).padStart(4,'0')))[0].dk;
+  cData=META.activeDk?(await idbByDk(META.activeDk)).map(c=>{c.searchableText=gSrch(c);return c;}):[];
+  rebuildDicts();reindex();fillMeta();renderDVBar();
+  $('upDate').value=new Date().toISOString().slice(0,10);
   drawTable(getFiltered());updateDash();updateSU();runPreview();
 
   $('searchBox').addEventListener('input',()=>{clearTimeout(sDeb);sDeb=setTimeout(()=>drawTable(getFiltered()),150);});
@@ -1380,6 +1544,7 @@ window.onload=async()=>{
 window.APP={get cData(){return cData;},set cData(v){cData=v;},META,reindex,drawTable,getFiltered,updateDash,
   gSrch,findByNo,kindOf,manualAction,openNewEntry,saveNewEntry,openCaseDetail,cdVerify,setFilter,
   uploadExcel,downloadExcel,rowFor,T,toggleTS,sheetChosen,headChosen,guessCols,showMore,scrollToFile,jumpVerify,toggleSplit,exCols,
+  renderDVBar,switchDataset,onDateChange,onVerChange,exportBackup,importBackup,get DSETS(){return DSETS;},
   onManualInput,selDD,get IMP(){return IMP;},set IMP(v){IMP=v;}};
 
 </script>

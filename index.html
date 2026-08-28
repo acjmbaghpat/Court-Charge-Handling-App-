@@ -544,13 +544,10 @@ function speak(msg,lang){
     speechSynthesis.cancel();speechSynthesis.speak(u);
   }catch(e){}
 }
-// APK mein file ka naam bolta hai (party name), browser mein sirf "File verified"
+// Sirf "Verified" / "Already verified" — naam nahi, kyunki TTS mile-jule Hindi-English
+// naamon ko theek nahi bol pata
 function speakVerified(rec,already){
-  if(!IS_APK){speak(already?'Already verified':'File verified','en-IN');return;}
-  let nm=String(rec.partyname||'').trim().replace(/\s+/g,' ');
-  if(!nm)nm=String(rec.caseno||'');
-  nm=nm.slice(0,70);
-  speak(already?('Pehle se — '+nm):nm,ttsLang(nm));
+  speak(already?'Already verified':'Verified','en-IN');
 }
 function haptic(){try{navigator.vibrate&&navigator.vibrate(35);}catch(e){}}
 

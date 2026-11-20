@@ -59,6 +59,23 @@ button{cursor:pointer;font-family:inherit}
 .tab-btn.on{color:#fff;border-bottom-color:var(--gold);background:rgba(255,255,255,.08)}
 #stDot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-left:6px;vertical-align:middle;flex-shrink:0;background:#4ade80}
 #stDot.warn{background:#fbbf24}
+#stDot.off{background:#94a3b8}
+#stDot.err{background:#f87171}
+#usrBar{display:flex;align-items:center;justify-content:center;gap:8px;padding:0 0 11px;font-size:12px;flex-wrap:wrap}
+#usrChip{background:rgba(255,255,255,.12);padding:4px 11px;border-radius:20px;font-weight:700}
+#onlineCnt{background:rgba(74,222,128,.18);color:#bbf7d0;padding:4px 10px;border-radius:20px;font-weight:600;display:none}
+#lgOut{background:none;border:1px solid rgba(255,255,255,.3);color:#fff;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+
+/* ══════════ LOGIN ══════════ */
+#loginOv{position:fixed;inset:0;z-index:1000;background:linear-gradient(135deg,var(--navy) 0%,var(--navy-3) 100%);
+  display:none;align-items:center;justify-content:center;padding:20px}
+#loginOv.on{display:flex}
+.lg-card{background:#fff;border-radius:20px;padding:28px 22px;width:100%;max-width:380px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.lg-ic{font-size:44px}
+.lg-t{font-size:22px;font-weight:800;color:var(--navy);margin-top:6px}
+.lg-s{font-size:13px;color:var(--mu);margin:4px 0 14px;font-weight:500}
+#lgName{font-size:17px;font-weight:700;text-align:center}
+.vby{font-size:12px;font-weight:700;color:#6d28d9}
 
 /* ══════════ LAYOUT ══════════ */
 .tab-c{display:none}.tab-c.on{display:block}
@@ -310,7 +327,12 @@ tr:hover td{background:#f0f4ff}
 <div id="app-hdr">
   <div id="app-hdr-title">
     ⚖️ Charge Verify · 📂 CIS vs Physical
-    <span id="stDot" title="Storage"></span>
+    <span id="stDot" class="off" title="Sync"></span>
+  </div>
+  <div id="usrBar">
+    <span id="usrChip">👤 —</span>
+    <span id="onlineCnt"></span>
+    <button id="lgOut" onclick="doLogout()">Logout</button>
   </div>
   <div id="tab-bar">
     <button class="tab-btn on" data-tab="cv" onclick="switchTab('cv')">⚖️ Verification</button>
@@ -334,7 +356,7 @@ tr:hover td{background:#f0f4ff}
       <button class="ftab" id="tab-extra" onclick="setFilter('extra')">➕ New<span class="tc" id="cNew">0</span></button>
       <button class="ftab" id="tab-remark" onclick="setFilter('remark')">📝 Remarked<span class="tc" id="cRem">0</span></button>
     </div>
-    <input type="text" id="searchBox" placeholder="Case No, Party Name, PS, CC No..." style="margin-top:11px">
+    <input type="text" id="searchBox" placeholder="Sr No, Case No, Party Name, PS, Verified By..." style="margin-top:11px">
   </div>
 
   <!-- Verification -->
@@ -354,6 +376,7 @@ tr:hover td{background:#f0f4ff}
   </div>
 
   <!-- Table -->
+  <div id="lessWrap" style="text-align:center;margin:0 0 8px"><button class="btn btn-g btn-sm" id="lessBtn" style="display:none" onclick="showLess()">⬆ Upar ke records</button></div>
   <div class="twrap"><table id="cvTable"></table></div>
   <div id="moreWrap"><button class="btn btn-g btn-sm" id="moreBtn" style="display:none" onclick="showMore()">⬇ Aur dikhao</button></div>
   <div id="tblInfo"></div>
@@ -373,9 +396,9 @@ tr:hover td{background:#f0f4ff}
 
   <!-- List Date & Version -->
   <div class="sec">
-    <h3>🗂️ List Date &amp; Version</h3>
+    <h3>🗂️ Date of Uploading the List &amp; Version</h3>
     <div class="dvbar">
-      <div><label>📅 List Date</label><select id="dsDate" onchange="onDateChange()"></select></div>
+      <div><label>📅 Date of Uploading</label><select id="dsDate" onchange="onDateChange()"></select></div>
       <div><label>🗂️ Version</label><select id="dsVer" onchange="onVerChange()"></select></div>
       <div id="dvInfo"></div>
     </div>
@@ -410,10 +433,24 @@ tr:hover td{background:#f0f4ff}
     </div>
   </div>
 
+  <!-- Mere QR Codes -->
+  <div class="sec bk-sec" id="qrSec">
+    <h3>🔳 Mere QR Codes</h3>
+    <div style="display:flex;align-items:center;gap:12px">
+      <div id="qrCnt" style="font-size:30px;font-weight:900;color:#6d28d9;min-width:48px;text-align:center">0</div>
+      <div id="qrTxt" style="font-size:12.5px;color:var(--mu);font-weight:600;line-height:1.5">—</div>
+    </div>
+    <button class="btn btn-pu" id="qrBtn" onclick="downloadQR(false)">🔳 QR Download</button>
+    <button class="btn btn-opu" id="qrAgain" onclick="downloadQR(true)" style="display:none">🔁 Pichhla batch dobara download</button>
+    <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500;line-height:1.6">
+      Sirf <b>aapki</b> verify ki hui files ke QR banenge, list ke kram mein (A4 sheet, 30 sticker — har sticker par sirf QR, Case No aur Party Name). Ek baar download ho gaye to agli baar sirf nayi verify ki hui files aayengi.
+    </div>
+  </div>
+
   <!-- Excel Upload -->
   <div class="sec up-sec">
     <h3>📥 CIS Excel Upload</h3>
-    <label class="fl" style="margin-top:0">Is list ki date</label>
+    <label class="fl" style="margin-top:0">Date of Uploading the List</label>
     <input type="date" id="upDate">
     <div class="jo-row" style="margin-top:8px">
       <button class="jo-btn t" id="addToCur" onclick="document.getElementById('addToCur').classList.toggle('on')">➕ Isi version mein jodo</button>
@@ -434,7 +471,42 @@ tr:hover td{background:#f0f4ff}
     <button class="btn btn-a" id="upBtn" onclick="uploadExcel()">📤 Upload Excel</button>
     <div id="upStatus" class="smsg"></div>
     <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
-      20,000 cases tak. Columns list jaise hi — Sr.No, Case No, Party Name, PS, CC No, Remark. Sr.No file ka apna hi rahega.
+      50,000 cases tak. List se sirf 4 column uthte hain — Sr.No, Case No, Party Name, PS. Baaki columns chhod diye jaate hain. Sr.No file ka apna hi rahega.
+    </div>
+  </div>
+
+  <!-- Cloud Sync -->
+  <div class="sec" id="syncSec">
+    <h3>☁️ Multi-user Live Sync</h3>
+    <div class="pvbox" id="syncInfo" style="margin-top:0">—</div>
+    <label class="fl">API Key *</label>
+    <input type="text" id="fb_apiKey" autocomplete="off" spellcheck="false" placeholder="AIzaSy...">
+    <label class="fl">Auth Domain</label>
+    <input type="text" id="fb_authDomain" autocomplete="off" spellcheck="false" placeholder="project-id.firebaseapp.com">
+    <label class="fl">Database URL *</label>
+    <input type="text" id="fb_databaseURL" autocomplete="off" spellcheck="false" placeholder="https://project-id-default-rtdb.firebaseio.com">
+    <label class="fl">Project ID *</label>
+    <input type="text" id="fb_projectId" autocomplete="off" spellcheck="false" placeholder="project-id">
+    <label class="fl">Storage Bucket</label>
+    <input type="text" id="fb_storageBucket" autocomplete="off" spellcheck="false" placeholder="project-id.appspot.com">
+    <label class="fl">Messaging Sender ID</label>
+    <input type="text" id="fb_messagingSenderId" autocomplete="off" spellcheck="false" placeholder="1234567890">
+    <label class="fl">App ID</label>
+    <input type="text" id="fb_appId" autocomplete="off" spellcheck="false" placeholder="1:1234567890:web:abc123">
+    <details style="margin-top:10px">
+      <summary style="font-size:12px;font-weight:700;color:var(--p);cursor:pointer">📋 Poora firebaseConfig ek saath paste karna hai?</summary>
+      <textarea id="fbPaste" placeholder="const firebaseConfig = { ... };"></textarea>
+      <button class="btn btn-g" onclick="pasteCfg()">⬇️ Khano mein bharo</button>
+    </details>
+    <div class="g2">
+      <button class="btn btn-s" onclick="saveFbCfg()">🔗 Connect</button>
+      <button class="btn btn-g" onclick="clearFbCfg()">✕ Disconnect</button>
+    </div>
+    <button class="btn btn-pu" onclick="pushCurrent()">☁️ Chalu list cloud par bhejo</button>
+    <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500;line-height:1.6">
+      * wale khane zaroori hain. Firebase Console → Project settings → Your apps → Web app se milenge.<br>
+      Connect hone ke baad har upload, verify, remark sab phones par turant dikhta hai. Jo file kisi ne verify kar di, wo baaki sab ke paas "Already Verified — naam" dikhegi.<br>
+      Sync se pehle upload ki hui list ko cloud par bhejna ho to upar wala purple button dabao.
     </div>
   </div>
 
@@ -462,7 +534,7 @@ tr:hover td{background:#f0f4ff}
     <div id="backupStatus" class="smsg"></div>
     <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500">
       Excel usi date + version ka banta hai jo upar chuna hua hai. Backup mein <b>sab dates ka poora data</b> aata hai.<br>
-      Excel mein Summary + All sheet hamesha. Upar wala button ON ho to Pending / Verified / New alag sheets bhi banti hain — 20,000 cases par isme 15-20 second lagte hain, band rakho to 5-6 second.
+      Excel mein Summary + All sheet hamesha. Upar wala button ON ho to Pending / Verified / New alag sheets bhi banti hain — 40,000 cases par phone mein isme 30-40 second lag sakte hain, band rakho to 10-15 second.
     </div>
   </div>
 
@@ -479,12 +551,8 @@ tr:hover td{background:#f0f4ff}
       <div><label class="fl" style="margin-top:0">Sr.No</label><input type="text" id="ne-sr" autocomplete="off"></div>
     </div>
     <label class="fl">Party Name</label><input type="text" id="ne-party" autocomplete="off">
-    <div class="g2">
-      <div><label class="fl" style="margin-top:0">PS</label><input type="text" id="ne-ps" autocomplete="off"></div>
-      <div><label class="fl" style="margin-top:0">CC No</label><input type="text" id="ne-cc" autocomplete="off"></div>
-    </div>
-    <label class="fl">u/s (agar list mein ho)</label><input type="text" id="ne-sec" autocomplete="off">
-    <label class="fl">Remark</label><input type="text" id="ne-rem" autocomplete="off" placeholder="e.g. file cover phata hai">
+    <label class="fl">PS</label><input type="text" id="ne-ps" autocomplete="off">
+    <label class="fl">Remark</label><input type="text" id="ne-rem" list="remList" autocomplete="off" placeholder="Remark type karo ya chuno">
     <input type="hidden" id="ne-id">
     <div class="g2" style="margin-top:14px">
       <button class="btn btn-s" style="margin-top:0" onclick="saveNewEntry(false)">✓ Save</button>
@@ -501,11 +569,34 @@ tr:hover td{background:#f0f4ff}
     <div class="msub" id="cd-sub"></div>
     <div id="cd-info" style="background:#f8fafc;border-radius:12px;padding:14px;margin-bottom:16px;font-size:13px"></div>
     <label class="fl" style="margin-top:0">Remark</label>
-    <input type="text" id="cd-rem" placeholder="Remark...">
+    <input type="text" id="cd-rem" list="remList" placeholder="Remark type karo ya chuno...">
     <div id="cd-btns" style="display:flex;flex-direction:column;gap:8px;margin-top:14px"></div>
     <button class="btn btn-g" onclick="closeCaseDetail()">✕ Band Karo</button>
   </div>
 </div>
+
+<!-- ═══════════ LOGIN ═══════════ -->
+<div id="loginOv">
+  <div class="lg-card">
+    <div class="lg-ic">⚖️</div>
+    <div class="lg-t">Charge Verify</div>
+    <div class="lg-s">Apna naam likho — password nahi chahiye</div>
+    <input type="text" id="lgName" placeholder="Aapka naam" autocomplete="off" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="btn btn-s" onclick="doLogin()">➡️ Enter</button>
+  </div>
+</div>
+
+<!-- Remark ke tayyar options — type bhi kar sakte ho -->
+<datalist id="remList">
+  <option value="File nahi mili">
+  <option value="File cover phata hai">
+  <option value="Pages missing">
+  <option value="PS galat hai">
+  <option value="Party name galat hai">
+  <option value="Doosri court mein">
+  <option value="Record room mein">
+  <option value="Duplicate entry">
+</datalist>
 
 <div id="toast"></div>
 <script>
@@ -631,22 +722,23 @@ function idbPutMany(arr,onProg){
     res();
   });
 }
-function strip(c){const o=Object.assign({},c);delete o.searchableText;return o;}
+function strip(c){const o=Object.assign({},c);delete o.searchableText;delete o.$d;delete o.$n;return o;}
 
 // ════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════
 // caseno = CIS list ka Case No (= computer no, dono ek hi hai) — yahi verification ki key hai
-// ps/ccno= list ke PS aur CC No column (sirf dikhane ke liye)
-// section= u/s — file mein ho to column apne aap aa jayega
+// ps     = list ka PS column
 // srno   = list ka apna serial — kabhi renumber nahi hota
 // ord    = file mein row ka original order — table isi order mein dikhti hai
+const MAXC=50000;   // ek list mein zyada se zyada cases
 let cData=[], aFilter='all', shown=0, PAGE=150, ddIdx=-1, ddList=[], picked=null;
 let byCase=new Map(), byDig=new Map(), byId=new Map(), byExact=new Map();
 let META={court:'',off:'',date:'',activeDk:''};
 // har upload ka apna dataset — { dk, date(yyyy-mm-dd), ver, count, at, file }
 let DSETS=[];
-const dkOf=(date,ver)=>date+'#v'+ver;
+// dk ke peeche chhota random tag — do phone ek hi date ki V1 alag-alag banayein to bhi aapas mein na mile
+const dkOf=(date,ver)=>date+'#v'+ver+'#'+Math.random().toString(36).slice(2,6);
 const dsGet=dk=>DSETS.find(d=>d.dk===dk)||null;
 const dsDates=()=>[...new Set(DSETS.map(d=>d.date))].sort().reverse();
 const dsOfDate=dt=>DSETS.filter(d=>d.date===dt).sort((a,b)=>b.ver-a.ver);
@@ -655,15 +747,15 @@ function curDs(){return dsGet(META.activeDk);}
 function dFmt(dt){return dt?dt.split('-').reverse().join('-'):'';}
 async function saveDsets(){await idbSM('datasets',DSETS);}
 const rTimers={};
-function gSrch(r){return[r.srno,r.caseno,r.partyname,r.ps,r.ccno,r.section,r.remark].join(' ').toLowerCase();}
+function gSrch(r){return[r.srno,r.caseno,r.partyname,r.ps,r.remark,r.vby].join(' ').toLowerCase();}
 function reindex(){
   byCase.clear();byDig.clear();byId.clear();byExact.clear();
   cData.sort((a,b)=>(a.ord==null?9e9:a.ord)-(b.ord==null?9e9:b.ord));
   cData.forEach(c=>{
     byId.set(c.id,c);
     const x=xKey(c.caseno);if(x&&!byExact.has(x))byExact.set(x,c);
-    const k=nKey(c.caseno);if(k&&!byCase.has(k))byCase.set(k,c);
-    const d=dKey(c.caseno);if(d&&!byDig.has(d))byDig.set(d,c);
+    const k=nKey(c.caseno);c.$n=k;if(k&&!byCase.has(k))byCase.set(k,c);
+    const d=dKey(c.caseno);c.$d=d;if(d&&!byDig.has(d))byDig.set(d,c);
     if(!c.searchableText)c.searchableText=gSrch(c);
   });
 }
@@ -674,8 +766,8 @@ function findByNo(v){
   return byCase.get(k)||byDig.get(dKey(v))||null;  // phir dhila match (typing mein / - space)
 }
 function kindOf(c){return c.src==='manual'?'extra':(c.verified?'verified':'pending');}
-// Remarked = jo remark aapne khud add/edit kiya ho (Excel se aaya hua remark nahi)
-function hasRem(c){return !!(c.rmEdit&&c.remark&&String(c.remark).trim());}
+// Remarked = jo remark kisi user ne likha ho
+function hasRem(c){return !!(c.remark&&String(c.remark).trim());}
 // New Entry ke liye agla serial number
 function nextSr(){
   let m=0;
@@ -692,16 +784,20 @@ async function saveMeta(){await idbSM('meta',META);}
 async function ensureDataset(){
   if(curDs())return curDs();
   const dt=new Date().toISOString().slice(0,10);
-  const ds={dk:dkOf(dt,1),date:dt,ver:1,count:0,at:new Date().toISOString(),file:'Manual'};
+  const ds={dk:dkOf(dt,1),date:dt,ver:1,count:0,at:new Date().toISOString(),file:'Manual',by:USER};
   DSETS.push(ds);META.activeDk=ds.dk;
   await saveDsets();await saveMeta();
+  pushDs(ds);attachCases(ds.dk);
   return ds;
 }
 // count hamesha usi dataset ke records se gina jaye
 async function recount(dk){
   const d=dsGet(dk);if(!d)return;
-  d.count=cData.filter(x=>x.dk===dk).length;
+  const n=cData.filter(x=>x.dk===dk).length;
+  const ch=d.count!==n;
+  d.count=n;
   await saveDsets();
+  if(ch&&fbOn&&remoteDks.has(dk))fdb.ref('cv/datasets/'+dkKey(dk)+'/count').set(n).catch(syncErr);
 }
 
 // ════════════════════════════════════════
@@ -721,6 +817,7 @@ function updateDash(){
   $('cRem').textContent=rm;
   const pct=cis?Math.round(v*100/cis):0;
   const pt=$('pctText');if(pt){pt.textContent=pct+'%';$('pbar').style.width=pct+'%';}
+  updQrUI();
 }
 function setFilter(f){
   aFilter=f;
@@ -742,23 +839,22 @@ function getFiltered(){
 // ════════════════════════════════════════
 // TABLE
 // ════════════════════════════════════════
-let viewData=[], hasUS=false;
-const HEAD_BASE=["Sr.No","Case No","Party Name","PS","CC No"];
-const HEAD_TAIL=["Status","Verify Date","Remark"];
+let viewData=[], wStart=0;   // wStart = table kis row se dikh rahi hai
+const HEADS=["Sr.No","Case No","Party Name","PS","Status","Verify Date &amp; Time","Verified By","Remark"];
 function drawTable(data,keepShown){
   viewData=data||[];
-  if(!keepShown)shown=Math.min(PAGE,viewData.length);
+  if(!keepShown){wStart=0;shown=Math.min(PAGE,viewData.length);}
+  if(wStart>=viewData.length)wStart=Math.max(0,viewData.length-PAGE);
+  if(shown>viewData.length)shown=viewData.length;
   const tbl=$('cvTable');
   if(!viewData.length){
     tbl.innerHTML='';
-    $('moreBtn').style.display='none';
+    $('moreBtn').style.display='none';$('lessBtn').style.display='none';
     $('tblInfo').textContent=cData.length?'Koi record nahi mila':'Settings se Excel upload karke shuru karo';
     return;
   }
-  hasUS=cData.some(c=>c.section);
-  const L=hasUS?HEAD_BASE.concat(['u/s'],HEAD_TAIL):HEAD_BASE.concat(HEAD_TAIL);
-  let h="<tr>"+L.map(x=>"<th>"+x+"</th>").join("")+"</tr>";
-  for(let i=0;i<shown;i++){
+  let h="<tr>"+HEADS.map(x=>"<th>"+x+"</th>").join("")+"</tr>";
+  for(let i=wStart;i<shown;i++){
     const r=viewData[i];if(!r)break;
     const k=kindOf(r);
     const pill=k==='verified'?'<span class="pill pill-v">✓ Verified</span>'
@@ -772,25 +868,27 @@ function drawTable(data,keepShown){
       +'<td class="kcell"><span class="cnoL" onclick="openCaseDetail(\''+rid+'\')">'+esc(r.caseno)+'</span></td>'
       +'<td class="kcell">'+esc(r.partyname)+'</td>'
       +'<td>'+esc(r.ps)+'</td>'
-      +'<td>'+esc(r.ccno||'')+'</td>'
-      +(hasUS?'<td>'+esc(r.section)+'</td>':'')
       +'<td>'+pill+'</td>'
       +'<td>'+(r.vdate?fmtDT(r.vdate):'')+'</td>'
-      +'<td><input value="'+esc(r.remark)+'" oninput="updateRemark(\''+rid+'\',this.value)" placeholder="Remark..."></td>'
+      +'<td><span class="vby">'+esc(r.vby||'')+(r.qd?' 🔳':'')+'</span></td>'
+      +'<td><input value="'+esc(r.remark)+'" list="remList" oninput="updateRemark(\''+rid+'\',this.value)" placeholder="Remark..."></td>'
       +'</tr>';
   }
   tbl.innerHTML=h;
   $('moreBtn').style.display=shown<viewData.length?'inline-flex':'none';
-  $('tblInfo').textContent=Math.min(shown,viewData.length)+' / '+viewData.length+' records';
+  $('lessBtn').style.display=wStart>0?'inline-flex':'none';
+  $('tblInfo').textContent=(wStart?(wStart+1)+'–':'')+Math.min(shown,viewData.length)+' / '+viewData.length+' records';
 }
 function showMore(){shown=Math.min(shown+PAGE,viewData.length);drawTable(viewData,true);}
+function showLess(){wStart=Math.max(0,wStart-PAGE);drawTable(viewData,true);window.scrollBy(0,1);}
 async function updateRemark(rid,val){
   clearTimeout(rTimers[rid]);
   rTimers[rid]=setTimeout(async()=>{
     const c=getRec(rid);
     if(c){
-      c.remark=val;c.rmEdit=val.trim()?1:0;c.searchableText=gSrch(c);
+      c.remark=val;c.rmEdit=val.trim()?1:0;c.rmBy=val.trim()?USER:'';c.searchableText=gSrch(c);
       await idbPut(strip(c));
+      pushFields(c,{remark:c.remark,rmEdit:c.rmEdit,rmBy:c.rmBy});
       const row=$('row_'+rid);
       if(row)row.classList.toggle('r-rem',hasRem(c));
       updateDash();
@@ -810,7 +908,8 @@ function scrollToFile(rid){
     idx=find();
   }
   if(idx===-1)return;
-  if(idx>=shown){shown=Math.min(idx+30,viewData.length);drawTable(viewData,true);}
+  // 40,000 mein bhi sirf us case ke aas-paas ke rows banao (poori list nahi)
+  if(idx<wStart||idx>=shown){wStart=Math.max(0,idx-20);shown=Math.min(wStart+PAGE,viewData.length);drawTable(viewData,true);}
   const row=$('row_'+rid);
   if(!row)return;
   setTimeout(()=>{
@@ -836,7 +935,7 @@ function onManualInput(){
   const A=[],B=[],C=[];
   for(const c of cData){
     if(c===ex)continue;
-    const cd=dKey(c.caseno),ck=nKey(c.caseno);
+    const cd=c.$d==null?dKey(c.caseno):c.$d,ck=c.$n==null?nKey(c.caseno):c.$n;
     if((d&&cd===d)||(k&&ck===k))A.push(c);
     else if((d&&cd.startsWith(d))||(k&&ck.startsWith(k)))B.push(c);
     else if(c.searchableText.indexOf(q)>-1)C.push(c);
@@ -846,7 +945,7 @@ function onManualInput(){
   if(!ddList.length){closeDD();return;}
   const dd=$('caseDD');
   dd.innerHTML=ddList.map(r=>{
-    const l2=[r.ps,r.section?'u/s '+r.section:'',r.ccno?'CC '+r.ccno:''].filter(Boolean).join(' · ')||'—';
+    const l2=[r.srno?'Sr '+r.srno:'',r.ps,r.vby?'✓ '+r.vby:''].filter(Boolean).join(' · ')||'—';
     const tick=r.verified?' <span class="pill pill-v">✓</span>':r.src==='manual'?' <span class="pill pill-e">New</span>':'';
     return '<div class="di" data-rid="'+r.id+'" onmousedown="selDD(\''+r.id+'\')">'
       +'<span class="di-no">'+esc(r.caseno)+'</span>'
@@ -881,11 +980,9 @@ function selDD(rid){
   $('manualCaseInput').value=r.caseno;closeDD();
   picked=r;
   const k=kindOf(r);
-  const bits=[['Case No',r.caseno],['Party Name',r.partyname||'—'],['PS',r.ps||'—'],
-    ['CC No',r.ccno||'—']];
-  if(r.section)bits.push(['u/s',r.section]);
+  const bits=[['Case No',r.caseno],['Sr.No',r.srno||'—'],['Party Name',r.partyname||'—'],['PS',r.ps||'—']];
   if(r.remark)bits.push(['Remark',r.remark]);
-  bits.push(['Status',k==='verified'?'✅ Pehle se Verified — '+fmtDT(r.vdate):k==='extra'?'➕ New Entry':'⏳ Pending']);
+  bits.push(['Status',k==='verified'?'✅ Pehle se Verified — '+fmtDT(r.vdate)+(r.vby?' · '+r.vby:''):k==='extra'?'➕ New Entry'+(r.vby?' · '+r.vby:''):'⏳ Pending']);
   $('pickBox').innerHTML='<div class="pk-h">'+esc(r.caseno)+'</div>'
     +bits.slice(1).map(b=>'<div class="pk-r"><span>'+b[0]+'</span><b>'+esc(String(b[1]))+'</b></div>').join('');
   $('pickBox').style.display='block';
@@ -918,16 +1015,19 @@ async function manualAction(mode){
   }
   const already=!!rec.verified;
   if(!already){
-    rec.verified=1;rec.vdate=new Date().toISOString();
+    rec.verified=1;rec.vdate=new Date().toISOString();rec.vby=USER;rec.qd='';
     rec.searchableText=gSrch(rec);
     await idbPut(strip(rec));
     speakVerified(rec,false);haptic();
   }else speakVerified(rec,true);
-  showMS((already?'ℹ️ Already Verified: ':'✅ VERIFIED: ')+rec.caseno+' — '+(rec.partyname||''),already?'info':'ok');
+  showMS(already
+    ?'ℹ️ Already Verified: '+rec.caseno+' — '+(rec.vby?'by '+rec.vby+' · ':'')+fmtDT(rec.vdate)
+    :'✅ VERIFIED: '+rec.caseno+' — '+(rec.partyname||''),already?'info':'ok');
   $('manualCaseInput').value='';closeDD();clearPick();
   if(aFilter!=='all'&&kindOf(rec)!==aFilter)setFilter('all');
   else drawTable(getFiltered());
   updateDash();scrollToFile(rec.id);
+  if(!already)remoteVerify(rec);          // cloud par — koi aur pehle kar chuka ho to uska naam dikhega
 }
 
 // Chipka hua button — seedha Verification bar par le jaata hai
@@ -945,7 +1045,7 @@ function openNewEntry(pre){
   $('ne-title').textContent=pre.id?'✏️ Edit Entry':'➕ New Entry';
   $('ne-id').value=pre.id||'';
   $('ne-case').value=pre.caseno||'';$('ne-party').value=pre.partyname||'';
-  $('ne-ps').value=pre.ps||'';$('ne-cc').value=pre.ccno||'';$('ne-sec').value=pre.section||'';
+  $('ne-ps').value=pre.ps||'';
   $('ne-sr').value=pre.srno||(pre.id?'':nextSr());   // naya case = agla serial apne aap
   $('ne-rem').value=pre.remark||'';
   $('neModal').classList.add('on');
@@ -959,12 +1059,11 @@ async function saveNewEntry(again){
   if(!caseno){showToast('⚠️ Case No zaroori hai','w');$('ne-case').focus();return;}
   const id=$('ne-id').value;
   const f={caseno,partyname:$('ne-party').value.trim(),ps:$('ne-ps').value.trim(),
-    ccno:$('ne-cc').value.trim(),section:$('ne-sec').value.trim(),
     srno:$('ne-sr').value.trim()||nextSr(),remark:$('ne-rem').value.trim()};
   f.rmEdit=f.remark?1:0;
   if(id){
     const c=cData.find(x=>x.id===id);
-    if(c){Object.assign(c,f);c.searchableText=gSrch(c);await idbPut(strip(c));}
+    if(c){Object.assign(c,f);c.searchableText=gSrch(c);await idbPut(strip(c));pushFields(c,f);}
     reindex();drawTable(getFiltered());updateDash();closeNE();
     showToast('✅ Update ho gaya: '+caseno);return;
   }
@@ -974,11 +1073,12 @@ async function saveNewEntry(again){
     setTimeout(()=>openCaseDetail(dup.caseno),300);return;
   }
   const ds=await ensureDataset();
-  const c=Object.assign({id:uid(),dk:ds.dk,src:'manual',verified:1,vdate:new Date().toISOString(),
+  const c=Object.assign({id:uid(),dk:ds.dk,src:'manual',verified:1,vdate:new Date().toISOString(),vby:USER,
     ord:1e9+cData.filter(x=>x.src==='manual').length},f);
   c.searchableText=gSrch(c);
   cData.push(c);reindex();
   await idbPut(strip(c));
+  pushRec(c);
   await recount(ds.dk);
   drawTable(getFiltered());updateDash();updateSU();renderDVBar();
   showToast('✅ New Entry add: '+caseno);speak('New entry added');haptic();
@@ -998,11 +1098,13 @@ function openCaseDetail(rid){
   $('cd-sub').textContent=r.partyname||'';
   const rows=[
     ['Sr.No',r.srno||'—'],['Case No',r.caseno],['Party Name',r.partyname||'—'],
-    ['PS',r.ps||'—'],['CC No',r.ccno||'—'],['u/s',r.section||'—'],
+    ['PS',r.ps||'—'],
     ['Source',r.src==='manual'?'➕ New Entry (list mein nahi)':'📋 CIS Excel List'],
     ['Status',k==='verified'?'✅ Verified':k==='pending'?'⏳ Pending':'➕ New Entry'],
-    ['Verify Date',r.vdate?fmtDT(r.vdate):'—']
+    ['Verify Date & Time',r.vdate?fmtDT(r.vdate):'—'],
+    ['Verified By',r.vby||'—']
   ];
+  if(r.rmBy)rows.push(['Remark By',r.rmBy]);
   $('cd-info').innerHTML=rows.map(x=>'<div><span>'+x[0]+':</span> <strong>'+esc(String(x[1]))+'</strong></div>').join('');
   $('cd-rem').value=r.remark||'';
   let b='';
@@ -1018,10 +1120,16 @@ $('caseDetailModal').addEventListener('click',function(e){if(e.target===this)clo
 async function cdVerify(on){
   const r=getRec(_cdId);if(!r)return;
   const nr=$('cd-rem').value.trim();
-  if(nr!==(r.remark||'')){r.remark=nr;r.rmEdit=nr?1:0;}
-  r.verified=on?1:0;r.vdate=on?new Date().toISOString():'';
+  const remCh=nr!==(r.remark||'');
+  if(remCh){r.remark=nr;r.rmEdit=nr?1:0;r.rmBy=nr?USER:'';}
+  if(on&&r.verified){                       // isi beech kisi aur ne kar diya
+    closeCaseDetail();showToast('ℹ️ Already verified by '+(r.vby||'—'),'w');return;
+  }
+  r.verified=on?1:0;r.vdate=on?new Date().toISOString():'';r.vby=on?USER:'';r.qd='';
   r.searchableText=gSrch(r);
   await idbPut(strip(r));
+  if(remCh)pushFields(r,{remark:r.remark,rmEdit:r.rmEdit,rmBy:r.rmBy});
+  if(on)remoteVerify(r);else pushFields(r,{verified:0,vdate:'',vby:'',qd:''});
   const cno=r.caseno;
   closeCaseDetail();
   if(aFilter!=='all'&&kindOf(r)!==aFilter)setFilter('all');
@@ -1038,7 +1146,7 @@ async function cdDel(){
   const r=getRec(_cdId);if(!r)return;
   if(!confirm('Case No. '+r.caseno+' ki entry hatani hai?'))return;
   cData=cData.filter(x=>x.id!==r.id);
-  await idbDel(r.id);reindex();
+  await idbDel(r.id);reindex();pushDel(r);
   if(META.activeDk)await recount(META.activeDk);
   closeCaseDetail();drawTable(getFiltered());updateDash();updateSU();renderDVBar();
   showToast('🗑 Hata diya: '+r.caseno,'d');
@@ -1067,18 +1175,15 @@ const needXJS=()=>window.ExcelJS?Promise.resolve():loadLib(['libs/exceljs.min.js
 // ════════════════════════════════════════
 // EXCEL UPLOAD
 // ════════════════════════════════════════
-// CIS list ke columns — isi order mein: Sr.No | Case No | Party Name | PS | CC No | Remark
-// (u/s optional — file mein ho to map ho jaayega aur table mein column aa jayega)
+// CIS list se sirf ye 4 columns uthte hain: Sr.No | Case No | Party Name | PS
+// Status, Verify Date & Time, Verified By, Remark — app khud bharti hai
 const FIELDS=[
   {k:'srno',l:'Sr.No',kw:['sr.no','sr no','s.no','sno','serial','क्रम','क्र.','क्रमांक']},
   {k:'caseno',l:'Case No',req:1,kw:['case no','case number','case_no','वाद संख्या','वाद सं','मुकदमा सं','केस न','caseno','case']},
   {k:'partyname',l:'Party Name',kw:['party name','name party','name of part','पक्षकार','वादी','प्रतिवादी','बनाम','title','party','name']},
-  {k:'ps',l:'PS',kw:['police station','p.s','थाना','ps','station','थाना/']},
-  {k:'ccno',l:'CC No',kw:['cc no','cc.no','ccno','c.c','cc','computer','कंप्यूटर','कम्प्यूटर','कंप्युटर','सी.सी']},
-  {k:'remark',l:'Remark',kw:['remark','टिप्पणी','note','stage','चरण','purpose','प्रयोजन','status','स्थिति']},
-  {k:'section',l:'u/s (optional)',kw:['u/s','under section','धारा','section','act','अधिनियम','अपराध','offence']}
+  {k:'ps',l:'PS',kw:['police station','p.s','थाना','ps','station','थाना/']}
 ];
-const POS_FIELDS=['srno','caseno','partyname','ps','ccno','remark'];  // heading match na ho to isi order se
+const POS_FIELDS=['srno','caseno','partyname','ps'];  // heading match na ho to isi order se
 let IMP=null;
 function guessCols(head){
   const used=new Set(),out={};
@@ -1095,7 +1200,7 @@ function guessCols(head){
     if(best>-1)used.add(best);
     out[f.k]=best;
   }
-  // heading match na ho to file ke apne order se bhar do (u/s ko chhod kar — wo optional hai)
+  // heading match na ho to file ke apne order se bhar do
   let col=0;
   for(const k of POS_FIELDS){
     if(out[k]>-1)continue;
@@ -1120,7 +1225,7 @@ $('excelFile').addEventListener('change',async e=>{
     $('mapBox').style.display='block';
     sheetChosen();
     const n=(IMP.rows||[]).length;
-    if(n>20000)upStatus('⚠️ File mein '+n+' rows hain — sirf pehle 20,000 cases hi upload honge','warn');
+    if(n>MAXC)upStatus('⚠️ File mein '+n+' rows hain — sirf pehle '+MAXC.toLocaleString('en-IN')+' cases hi upload honge','warn');
     else upStatus('✅ '+file.name+' ready — mapping check karke Upload dabao','ok');
   }catch(err){
     IMP=null;$('mapBox').style.display='none';
@@ -1188,7 +1293,7 @@ async function uploadExcel(){
     if(addMode)ds=curDs();
     else{
       const ver=dsNextVer(dt);
-      ds={dk:dkOf(dt,ver),date:dt,ver,count:0,at:new Date().toISOString(),file:IMP.name||''};
+      ds={dk:dkOf(dt,ver),date:dt,ver,count:0,at:new Date().toISOString(),file:IMP.name||'',by:USER};
       DSETS.push(ds);created=true;META.activeDk=ds.dk;cData=[];
     }
     const seen=new Set(cData.map(c=>xKey(c.caseno)));   // duplicate wahi jo bilkul same ho
@@ -1199,28 +1304,38 @@ async function uploadExcel(){
     for(const r of rows){
       const caseno=val(r,map.caseno);
       if(!caseno)continue;
-      if(cData.length+fresh.length>=20000){cut++;continue;}
+      if(cData.length+fresh.length>=MAXC){cut++;continue;}
       const k=xKey(caseno);
       if(seen.has(k)){dup++;continue;}
       seen.add(k);
       n++;
-      const c={id:uid(),dk:ds.dk,caseno,src:'cis',verified:0,vdate:'',
+      const c={id:uid(),dk:ds.dk,caseno,src:'cis',verified:0,vdate:'',vby:'',
         ord:base+n,
         srno:val(r,map.srno)||String(base+n),
-        partyname:val(r,map.partyname),ps:val(r,map.ps),ccno:val(r,map.ccno),
-        section:val(r,map.section),remark:val(r,map.remark)};
+        partyname:val(r,map.partyname),ps:val(r,map.ps),remark:''};
       c.searchableText=gSrch(c);
       fresh.push(c);
     }
     await idbPutMany(fresh,n2=>{$('imProg').style.width=Math.round(n2*100/fresh.length)+'%';});
     cData=cData.concat(fresh);
     reindex();clearPick();$('manualCaseInput').value='';
+    // cloud par bhejo — online ho to progress ke saath, offline ho to queue mein
+    if(fbOn){
+      const cnt=cData.filter(x=>x.dk===ds.dk).length;ds.count=cnt;
+      pushDs(ds);
+      if(fbLive){
+        upStatus('☁️ Cloud par bhej rahe hain...','info');
+        await pushCases(ds.dk,fresh,n2=>{$('imProg').style.width=Math.round(n2*100/fresh.length)+'%';});
+      }else pushCases(ds.dk,fresh);
+      attachCases(ds.dk);
+    }
     await recount(ds.dk);await saveMeta();
     renderDVBar();setFilter('all');updateDash();updateSU();
     $('mapBox').style.display='none';$('excelFile').value='';IMP=null;
     let m='✅ '+fresh.length+' cases — '+dFmt(ds.date)+' · V'+ds.ver;
+    if(fbOn)m+=fbLive?' · ☁️ sab phones par':' · ☁️ online hote hi sync';
     if(dup)m+=' · '+dup+' duplicate chhode';
-    if(cut)m+=' · 20,000 limit par '+cut+' rah gaye';
+    if(cut)m+=' · '+MAXC.toLocaleString('en-IN')+' limit par '+cut+' rah gaye';
     upStatus(m,'ok');showToast('✅ '+dFmt(ds.date)+' V'+ds.ver+' — '+fresh.length+' cases');speak('Excel uploaded');
   }catch(e){
     if(created&&ds){                              // aadha bana dataset hata do
@@ -1267,9 +1382,11 @@ async function switchDataset(dk){
   clearPick();$('manualCaseInput').value='';closeDD();   // purani list ka chuna hua case yahin chhod do
   $('manualStatus').className='smsg';
   META.activeDk=dk;await saveMeta();
+  if(caseRef){caseRef.off();caseRef=null;}attachedDk='';attachGen++;
   const rows=await idbByDk(dk);
   cData=rows.map(c=>{c.searchableText=gSrch(c);return c;});
   reindex();await recount(dk);
+  attachCases(dk);
   const ds=dsGet(dk);
   renderDVBar();setFilter('all');updateDash();updateSU();
   showToast('📅 '+dFmt(ds.date)+' · V'+ds.ver+' — '+cData.length+' cases');
@@ -1278,18 +1395,16 @@ async function switchDataset(dk){
 // ════════════════════════════════════════
 // EXCEL DOWNLOAD
 // ════════════════════════════════════════
-function exCols(withUS){
-  const c=[{h:'Sr.No',w:8},{h:'Case No',w:18},{h:'Party Name',w:34},{h:'PS',w:15},{h:'CC No',w:14}];
-  if(withUS)c.push({h:'u/s',w:20});
-  return c.concat([{h:'Source',w:11},{h:'Status',w:12},{h:'Verify Date',w:18},{h:'Remark',w:24}]);
+function exCols(){
+  return [{h:'Sr.No',w:8},{h:'Case No',w:18},{h:'Party Name',w:34},{h:'PS',w:15},
+    {h:'Source',w:11},{h:'Status',w:12},{h:'Verify Date & Time',w:18},{h:'Verified By',w:18},{h:'Remark',w:26}];
 }
-function rowFor(c,i,withUS){
+function rowFor(c,i){
   const k=kindOf(c);
-  const r=[c.srno||(i+1),c.caseno||'',c.partyname||'',c.ps||'',c.ccno||''];
-  if(withUS)r.push(c.section||'');
-  return r.concat([c.src==='manual'?'New Entry':'CIS',
+  return [c.srno||(i+1),c.caseno||'',c.partyname||'',c.ps||'',
+    c.src==='manual'?'New Entry':'CIS',
     k==='verified'?'Verified':k==='pending'?'Pending':'New Entry',
-    c.vdate?fmtDT(c.vdate):'',c.remark||'']);
+    c.vdate?fmtDT(c.vdate):'',c.vby||'',c.remark||''];
 }
 function dl(blob,name){
   // APK: Java bridge se Download folder mein save. Browser: normal download.
@@ -1330,13 +1445,17 @@ async function downloadExcel(){
       r.getCell(1).font={name:'Nirmala UI',size:11,bold:true,color:{argb:'FF444C5E'}};};
     put('Officer',META.off||'—');
     put('Charge Date',META.date?dFmt(META.date):'—');
-    put('List Date',ds?dFmt(ds.date):'—');
+    put('Date of Uploading the List',ds?dFmt(ds.date):'—');
     put('Version',ds?('V'+ds.ver+(ds.file?'  ('+ds.file+')':'')):'—');
     put('Report Date',fmtDT(new Date().toISOString()));
     sum.addRow([]);
     put('CIS Total',v+p);put('Verified (mil gayi)',v);put('Pending (nahi mili)',p);
     put('New Entry (Excel list mein nahi)',e);put('Progress',((v+p)?Math.round(v*100/(v+p)):0)+'%');
-    const withUS=cData.some(x=>x.section),COLS=exCols(withUS);
+    // kisne kitni file verify ki
+    const byU={};cData.forEach(c=>{if(c.verified&&c.vby)byU[c.vby]=(byU[c.vby]||0)+1;});
+    const uk=Object.keys(byU).sort((a,b)=>byU[b]-byU[a]);
+    if(uk.length){sum.addRow([]);put('Verified By (user-wise)','');uk.forEach(u=>put('   '+u,byU[u]));}
+    const COLS=exCols();
     const mk=(name,arr,tint)=>{
       const ws=wb.addWorksheet(name);
       ws.columns=COLS.map(c=>({width:c.w}));
@@ -1348,7 +1467,7 @@ async function downloadExcel(){
         cell.border={top:{style:'thin'},left:{style:'thin'},bottom:{style:'thin'},right:{style:'thin'}};
       });
       const F={name:'Nirmala UI',size:10},AL={vertical:'top',wrapText:true};
-      arr.forEach((c,i)=>{const r=ws.addRow(rowFor(c,i,withUS));r.font=F;r.alignment=AL;});
+      arr.forEach((c,i)=>{const r=ws.addRow(rowFor(c,i));r.font=F;r.alignment=AL;});
       ws.views=[{state:'frozen',ySplit:1}];
       ws.autoFilter={from:{row:1,column:1},to:{row:1,column:COLS.length}};
     };
@@ -1366,9 +1485,9 @@ async function downloadExcel(){
   }catch(err){
     console.error(err);
     const q=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"';
-    const wU=cData.some(x=>x.section),C=exCols(wU);
+    const C=exCols();
     const lines=[C.map(c=>q(c.h)).join(',')];
-    cData.forEach((c,i)=>lines.push(rowFor(c,i,wU).map(q).join(',')));
+    cData.forEach((c,i)=>lines.push(rowFor(c,i).map(q).join(',')));
     const ds2=curDs();
     dl(new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),
       'ChargeVerify_'+(ds2?ds2.date.replace(/-/g,'')+'_V'+ds2.ver:'all')+'.csv');
@@ -1408,6 +1527,7 @@ async function importBackup(ev){
     if(!Array.isArray(bk.cases))throw new Error('backup mein "cases" list nahi mili');
     if(!confirm('Restore karne par mojuda saara data hat jayega. Jari rakhein?')){ev.target.value='';return;}
     await idbClr();
+    LT={};await idbSM('lastT',{});
     const all=bk.cases.map(c=>{if(!c.dk)c.dk='old#v1';return c;});
     await idbPutMany(all);
     if(bk.meta)Object.assign(META,bk.meta);
@@ -1451,13 +1571,505 @@ function fillMeta(){
 }
 
 // ════════════════════════════════════════
+// QR CODES — har user ke sirf apne verify kiye hue, Sr.No ke kram mein
+// ════════════════════════════════════════
+// qd = QR kab download hua. Ek baar download = agli baar wo file nahi aayegi.
+const needQR=()=>window.qrcode?Promise.resolve():loadLib(['libs/qrcode.min.js',
+  'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js']);
+const needPDF=()=>(window.jspdf&&window.jspdf.jsPDF)?Promise.resolve():loadLib(['libs/jspdf.umd.min.js',
+  'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+  'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js']);
+function srNum(c){const m=String(c.srno==null?'':c.srno).match(/\d+(\.\d+)?/);return m?parseFloat(m[0]):Infinity;}
+function bySerial(a,b){return srNum(a)-srNum(b)||((a.ord||0)-(b.ord||0))||String(a.caseno).localeCompare(String(b.caseno));}
+const isMine=c=>c.verified&&USER&&c.vby===USER;
+function myQrNew(){return cData.filter(c=>isMine(c)&&!c.qd).sort(bySerial);}
+function myQrLast(){
+  let mx='';cData.forEach(c=>{if(isMine(c)&&c.qd&&c.qd>mx)mx=c.qd;});
+  return mx?cData.filter(c=>isMine(c)&&c.qd===mx).sort(bySerial):[];
+}
+function updQrUI(){
+  const el=$('qrCnt');if(!el)return;
+  let mine=0,neu=0,mx='',last=0;
+  cData.forEach(c=>{if(!isMine(c))return;mine++;if(!c.qd)neu++;else if(c.qd>mx){mx=c.qd;}});
+  if(mx)cData.forEach(c=>{if(isMine(c)&&c.qd===mx)last++;});
+  el.textContent=neu;
+  $('qrTxt').innerHTML=USER
+    ?('<b style="color:var(--txt)">'+esc(USER)+'</b> — nayi verified files jinka QR baaki hai<br>Kul aapki verified: '+mine+' · QR ho chuke: '+(mine-neu))
+    :'Login karo';
+  const b=$('qrBtn');if(b&&!b.disabled)b.textContent='🔳 QR Download ('+neu+')';
+  const a=$('qrAgain');
+  if(a){a.style.display=last?'flex':'none';a.textContent='🔁 Pichhla batch dobara ('+last+' · '+fmtDT(mx)+')';}
+}
+function fitText(g,t,x,y,w){
+  t=String(t==null?'':t);if(!t)return;
+  if(g.measureText(t).width<=w){g.fillText(t,x,y);return;}
+  while(t.length>1&&g.measureText(t+'…').width>w)t=t.slice(0,-1);
+  g.fillText(t+'…',x,y);
+}
+function wrapText(g,t,x,y,w,lh,max){
+  const words=String(t||'').split(/\s+/).filter(Boolean);let line='',n=0;
+  for(let i=0;i<words.length;i++){
+    const test=line?line+' '+words[i]:words[i];
+    if(g.measureText(test).width<=w||!line){line=test;continue;}
+    if(n===max-1){fitText(g,line+' '+words.slice(i).join(' '),x,y+n*lh,w);return;}
+    g.fillText(line,x,y+n*lh);n++;line=words[i];
+  }
+  if(line)fitText(g,line,x,y+n*lh,w);
+}
+// Top quality, apne aap:
+//  • QR = vector (PDF ke andar asli boxes) — kitna bhi zoom/print karo, bilkul sharp
+//  • Case No + Party Name = 400 DPI image (Hindi naam bhi sahi chhapein)
+// A4 par 3 × 10 = 30 sticker
+async function buildQrPdf(list){
+  const {jsPDF}=window.jspdf;
+  if(qrcode.stringToBytesFuncs&&qrcode.stringToBytesFuncs['UTF-8'])qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
+  try{await document.fonts.ready;}catch(e){}
+  const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
+  const COLS=3,ROWS=10,PER=COLS*ROWS,PW=210,PH=297,MX=6,MT=7,MB=12;
+  const LW=(PW-2*MX)/COLS,LH=(PH-MT-MB)/ROWS;
+  const QS=LH-3;                                  // QR ka size (mm)
+  const TW=LW-1.5-QS-1.2-1.5,TH=LH-3;             // text wali jagah (mm)
+  const S=16;                                     // 16 px/mm ≈ 406 DPI
+  const cv=document.createElement('canvas');cv.width=Math.ceil(TW*S);cv.height=Math.ceil(TH*S);
+  const g=cv.getContext('2d');
+  const F="'Noto Sans Devanagari','Nirmala UI','Outfit',Roboto,'Segoe UI',sans-serif";
+  const pages=Math.ceil(list.length/PER);
+  for(let pg=0;pg<pages;pg++){
+    if(pg)pdf.addPage();
+    const chunk=list.slice(pg*PER,pg*PER+PER);
+    chunk.forEach((c,i)=>{
+      const x=MX+(i%COLS)*LW,y=MT+Math.floor(i/COLS)*LH;
+      // katne ki halki line
+      pdf.setDrawColor(190,196,208);pdf.setLineWidth(0.2);pdf.setLineDashPattern([1,1],0);
+      pdf.rect(x+0.15,y+0.15,LW-0.3,LH-0.3,'S');pdf.setLineDashPattern([],0);
+      // QR — vector, ek line ke lagatar kaale modules ek hi box (beech mein safed lakeer na aaye)
+      const q=qrcode(0,'M');q.addData(String(c.caseno));q.make();
+      const n=q.getModuleCount(),cell=QS/(n+2),qx=x+1.5+cell,qy=y+1.5+cell;
+      pdf.setFillColor(0,0,0);
+      for(let r=0;r<n;r++){
+        let k=0;
+        while(k<n){
+          if(!q.isDark(r,k)){k++;continue;}
+          let e=k;while(e<n&&q.isDark(r,e))e++;
+          pdf.rect(qx+k*cell,qy+r*cell,(e-k)*cell,cell+0.02,'F');
+          k=e;
+        }
+      }
+      // Case No + Party Name
+      g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);
+      g.fillStyle='#000';g.textBaseline='top';
+      const tw=cv.width-2;
+      g.font='800 '+(3.8*S)+'px '+F;fitText(g,c.caseno,0,1.1*S,tw);
+      g.font='500 '+(2.9*S)+'px '+F;wrapText(g,c.partyname,0,7.1*S,tw,3.5*S,4);
+      pdf.addImage(cv.toDataURL('image/png'),'PNG',x+1.5+QS+1.2,y+1.5,TW,TH,undefined,'FAST');
+    });
+    pdf.setTextColor(110,110,110);pdf.setFontSize(8);
+    pdf.text('Page '+(pg+1)+' / '+pages,MX,PH-5);
+    await new Promise(r=>setTimeout(r,0));        // beech mein UI ko saans lene do
+  }
+  return pdf.output('blob');
+}
+let qrBusy=false;
+async function downloadQR(again){
+  if(qrBusy)return;
+  if(!USER){showLogin();return;}
+  const list=again?myQrLast():myQrNew();
+  if(!list.length){showToast(again?'Pichhla batch nahi mila':'⚠️ Koi nayi verified file nahi — pehle verify karo','w');return;}
+  const btn=again?$('qrAgain'):$('qrBtn');
+  qrBusy=true;btn.disabled=true;btn.textContent='⏳ '+list.length+' QR ban rahe hain...';
+  try{
+    await Promise.all([needQR(),needPDF()]);
+    const blob=await buildQrPdf(list);
+    const d=new Date(),ds=curDs();
+    const name='QR_'+USER.replace(/[^\wऀ-ॿ]+/g,'_')+'_'+(ds?ds.date.replace(/-/g,''):'')
+      +'_'+list.length+'files'
+      +'_'+p2(d.getHours())+p2(d.getMinutes())+'.pdf';
+    dl(blob,name);
+    if(!again){                                             // inhe "QR ho gaya" mark karo
+      const stamp=d.toISOString();
+      list.forEach(c=>{c.qd=stamp;});
+      await idbPutMany(list);
+      if(fbOn){
+        const byDk={};
+        list.forEach(c=>{if(remoteDks.has(c.dk))(byDk[c.dk]=byDk[c.dk]||{})[c.id+'/q']=stamp,byDk[c.dk][c.id+'/t']=TS();});
+        for(const dk in byDk)fdb.ref('cv/cases/'+dkKey(dk)).update(byDk[dk]).catch(syncErr);
+      }
+      drawTable(getFiltered(),true);
+    }
+    showToast('🔳 '+list.length+' QR — '+name);
+  }catch(e){
+    console.error(e);showToast('❌ QR nahi ban paye — '+(e&&e.message?e.message:e),'d');
+  }finally{
+    qrBusy=false;btn.disabled=false;updQrUI();
+  }
+}
+
+// ════════════════════════════════════════
+// LOGIN (sirf naam — password nahi)
+// ════════════════════════════════════════
+let USER='';
+const SID=uid();   // is phone/tab ka session id (online list ke liye)
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{if(v==null)localStorage.removeItem(k);else localStorage.setItem(k,v);}catch(e){}}
+function showLogin(){
+  $('loginOv').classList.add('on');
+  setTimeout(()=>{const i=$('lgName');if(i){i.value='';i.focus();}},200);
+}
+async function doLogin(){
+  const n=$('lgName').value.replace(/\s+/g,' ').trim();
+  if(n.length<2){showToast('⚠️ Naam likho (kam se kam 2 akshar)','w');$('lgName').focus();return;}
+  USER=n;lsSet('cv_user',n);await idbSM('user',n);
+  $('loginOv').classList.remove('on');
+  setUserUI();presence();
+  showToast('👋 Namaste '+n);
+}
+async function doLogout(){
+  if(!confirm(USER+' — logout karna hai?'))return;
+  if(fbOn)try{fdb.ref('cv/presence/'+SID).remove();}catch(e){}
+  USER='';lsSet('cv_user',null);await idbSM('user','');
+  setUserUI();showLogin();
+}
+function setUserUI(){$('usrChip').textContent='👤 '+(USER||'—');try{updQrUI();}catch(e){}}
+
+// ════════════════════════════════════════
+// CLOUD SYNC — Firebase Realtime Database
+// ════════════════════════════════════════
+// Har phone par config na bharna pade to apna Firebase config yahan bhar do.
+// (Firebase Console → Project settings → Your apps → Web app → firebaseConfig)
+const FB_DEFAULT={
+  apiKey:            "",
+  authDomain:        "",
+  databaseURL:       "",   // https://xxxx-default-rtdb.firebaseio.com  (ya ...asia-southeast1.firebasedatabase.app)
+  projectId:         "",
+  storageBucket:     "",
+  messagingSenderId: "",
+  appId:             ""
+};
+const FB_KEYS=['apiKey','authDomain','databaseURL','projectId','storageBucket','messagingSenderId','appId'];
+const FBV='10.12.2';
+let fdb=null, fbOn=false, fbLive=false, caseRef=null, remoteDks=new Set(), dsFirst=true;
+let srvOff=0, attachGen=0, attachedDk='', LT={};            // LT = har list ka aakhri sync time (delta ke liye)
+const dkKey=dk=>String(dk||'').replace(/[.#$\[\]\/]/g,'_');
+const TS=()=>firebase.database.ServerValue.TIMESTAMP;
+const srvNow=()=>Date.now()+srvOff;
+function syncErr(e){console.warn('sync',e);setSyncUI('err',e&&e.message?e.message:String(e));}
+
+// ── Cloud par chhote naam (40,000 cases par data aadha ho jaata hai) ──
+// s=Sr.No c=Case No p=Party ps=PS o=source v=verified vd=verify time vb=verified by
+// r=remark rb=remark by n=order t=server time x=deleted
+const L2R={srno:'s',caseno:'c',partyname:'p',ps:'ps',src:'o',verified:'v',vdate:'vd',vby:'vb',remark:'r',rmBy:'rb',ord:'n',qd:'q'};
+function rv(f,v){                              // khali value = cloud se hata do (null)
+  if(v===undefined||v===null||v==='')return null;
+  if(f==='verified')return v?1:null;
+  if(f==='src')return v==='manual'?'m':null;  // 'cis' default hai — bhejne ki zaroorat nahi
+  return v;
+}
+function toRemote(c){
+  const o={};
+  for(const f in L2R){const v=rv(f,c[f]);if(v!==null)o[L2R[f]]=v;}
+  o.t=TS();
+  return o;
+}
+function toRemoteFields(f){
+  const o={};
+  for(const k in f){if(L2R[k])o[L2R[k]]=rv(k,f[k]);}
+  o.t=TS();
+  return o;
+}
+function fromRemote(v,dk){
+  if(v&&'caseno' in v)return Object.assign({},v,{dk});   // pichhle version ka lamba format
+  return {dk,srno:v.s==null?'':String(v.s),caseno:v.c==null?'':String(v.c),partyname:v.p||'',ps:v.ps||'',
+    src:v.o==='m'?'manual':'cis',verified:v.v?1:0,vdate:v.vd||'',vby:v.vb||'',
+    remark:v.r||'',rmEdit:v.r?1:0,rmBy:v.rb||'',qd:v.q||'',ord:v.n==null?undefined:v.n,del:v.x?1:0,t:+v.t||0};
+}
+
+// ── Config ──
+function parseCfg(txt){
+  txt=String(txt||'').trim();if(!txt)return null;
+  const a=txt.indexOf('{'),b=txt.lastIndexOf('}');
+  if(a<0||b<a)throw new Error('{ ... } wala config paste karo');
+  let s=txt.slice(a,b+1);
+  try{return JSON.parse(s);}catch(e){}
+  s=s.replace(/\/\/.*$/gm,'').replace(/([{,]\s*)([A-Za-z_$][\w$]*)\s*:/g,'$1"$2":')
+     .replace(/'([^']*)'/g,'"$1"').replace(/,\s*}/g,'}');
+  return JSON.parse(s);
+}
+function fbCfg(){
+  try{const s=lsGet('cv_fbcfg');if(s){const c=JSON.parse(s);if(c&&c.databaseURL)return c;}}catch(e){}
+  return FB_DEFAULT.databaseURL?FB_DEFAULT:null;
+}
+function fillCfgUI(cfg){FB_KEYS.forEach(k=>{const el=$('fb_'+k);if(el)el.value=(cfg&&cfg[k])||'';});}
+function readCfgUI(){const c={};FB_KEYS.forEach(k=>{const v=($('fb_'+k).value||'').trim();if(v)c[k]=v;});return c;}
+function pasteCfg(){                         // poora firebaseConfig ek saath paste karo → alag-alag khano mein bhar jayega
+  try{const c=parseCfg($('fbPaste').value);if(!c)return;fillCfgUI(c);$('fbPaste').value='';showToast('✅ Khane bhar gaye — ab Connect dabao');}
+  catch(e){showToast('❌ Config samajh nahi aaya — '+e.message,'d');}
+}
+const needFB=()=>(window.firebase&&firebase.database)?Promise.resolve():
+  loadLib(['libs/firebase-app-compat.js','https://www.gstatic.com/firebasejs/'+FBV+'/firebase-app-compat.js'])
+  .then(()=>loadLib(['libs/firebase-database-compat.js','https://www.gstatic.com/firebasejs/'+FBV+'/firebase-database-compat.js']))
+  .then(()=>loadLib(['libs/firebase-auth-compat.js','https://www.gstatic.com/firebasejs/'+FBV+'/firebase-auth-compat.js']).catch(()=>{}));
+
+function setSyncUI(st,msg){
+  const d=$('stDot'),box=$('syncInfo');
+  const M={
+    off:['off','⚪ Sync band — sirf is phone par data. Neeche Firebase config bhar kar Connect karo.'],
+    conn:['warn','⏳ Cloud se jud rahe hain...'],
+    load:['warn','⏳ Poori list cloud se aa rahi hai'+(msg?' — '+msg:'')+' (pehli baar hi, phir sirf badlaav aayenge)'],
+    live:['','🟢 Live — sab phones ke saath sync ho raha hai'],
+    offline:['warn','🟠 Internet nahi — kaam chalta rahega, net aate hi apne aap sync hoga'],
+    err:['err','🔴 Sync error — '+(msg||'')]
+  }[st]||['off',''];
+  d.className=M[0];d.title=M[1];
+  if(box)box.innerHTML='<span>'+esc(M[1])+'</span>';
+}
+async function startSync(){
+  const cfg=fbCfg();
+  if(!cfg){setSyncUI('off');return false;}
+  try{
+    setSyncUI('conn');
+    LT=(await idbGM('lastT'))||{};
+    await needFB();
+    if(!firebase.apps.length)firebase.initializeApp(cfg);
+    fdb=firebase.database();
+    try{if(firebase.auth)await firebase.auth().signInAnonymously();}catch(e){console.warn('anon auth',e&&e.code);}
+    fbOn=true;
+    fdb.ref('.info/serverTimeOffset').on('value',s=>{srvOff=+s.val()||0;});
+    fdb.ref('.info/connected').on('value',s=>{
+      fbLive=!!s.val();setSyncUI(fbLive?'live':'offline');
+      if(fbLive)presence();
+    });
+    fdb.ref('cv/datasets').on('value',s=>onRemoteDsets(s.val()||{}),syncErr);
+    fdb.ref('cv/meta').on('value',s=>{
+      const m=s.val();if(!m)return;
+      META.court=m.court||'';META.off=m.off||'';META.date=m.date||'';
+      saveMeta();fillMeta();
+    });
+    fdb.ref('cv/presence').on('value',s=>{
+      const v=s.val()||{},names=[...new Set(Object.values(v).map(x=>x&&x.name).filter(Boolean))];
+      const el=$('onlineCnt');
+      if(names.length){el.style.display='inline';el.textContent='👥 '+names.length+' online';el.title=names.join(', ');}
+      else el.style.display='none';
+    });
+    attachCases(META.activeDk);
+    return true;
+  }catch(e){fbOn=false;syncErr(e);return false;}
+}
+function presence(){
+  if(!fbOn||!USER)return;
+  const r=fdb.ref('cv/presence/'+SID);
+  r.onDisconnect().remove();
+  r.set({name:USER,at:TS()}).catch(()=>{});
+}
+async function onRemoteDsets(obj){
+  const remote=Object.values(obj).filter(d=>d&&d.dk);
+  remoteDks=new Set(remote.map(d=>d.dk));
+  const before=new Set(DSETS.map(d=>d.dk));
+  const map=new Map(DSETS.map(d=>[d.dk,d]));
+  remote.forEach(d=>map.set(d.dk,Object.assign(map.get(d.dk)||{},d)));
+  DSETS=[...map.values()];
+  await saveDsets();
+  const added=remote.filter(d=>!before.has(d.dk));
+  if(!dsGet(META.activeDk)&&DSETS.length){
+    const latest=DSETS.slice().sort((a,b)=>(b.date+String(b.ver).padStart(4,'0')+b.at).localeCompare(a.date+String(a.ver).padStart(4,'0')+a.at))[0];
+    await switchDataset(latest.dk);
+  }else{
+    if(remoteDks.has(META.activeDk)&&attachedDk!==META.activeDk)attachCases(META.activeDk);
+    renderDVBar();updateSU();
+  }
+  if(!dsFirst&&added.length){
+    const d=added[0];
+    showToast('📥 Nayi list aayi: '+dFmt(d.date)+' · V'+d.ver+(d.by?' ('+d.by+')':'')+' — Settings se chuno');
+  }
+  dsFirst=false;
+}
+
+// ── Chalu list ke cases suno ──
+// Pehli baar: poori list ek hi baar (once). Uske baad: sirf wo cases jinka time (t) badla —
+// isliye 40,000 cases × 10 users mein bhi har badlaav par sirf wahi ek case aata-jaata hai.
+async function attachCases(dk){
+  if(caseRef){caseRef.off();caseRef=null;}
+  const gen=++attachGen;
+  attachedDk='';
+  if(!fbOn||!dk||!remoteDks.has(dk))return;
+  attachedDk=dk;
+  const ref=fdb.ref('cv/cases/'+dkKey(dk));
+  let last=+LT[dk]||0;
+  const haveLocal=cData.some(c=>c.dk===dk);
+  if(!last||!haveLocal){
+    setSyncUI('load',(dsGet(dk)||{}).count?(dsGet(dk).count+' cases'):'');
+    try{
+      const snap=await ref.once('value');
+      if(gen!==attachGen)return;              // beech mein list badal di
+      const all=snap.val()||{};
+      let mx=0;
+      for(const id in all){const v=all[id];if(v&&+v.t>mx)mx=+v.t;RQ.set(id,{v,dk});}
+      last=mx||srvNow();
+      await flushRemote();
+      setLT(dk,last);
+      setSyncUI(fbLive?'live':'offline');
+    }catch(e){syncErr(e);return;}
+  }
+  if(gen!==attachGen)return;
+  // 2 minute peeche se — ghadi ka chhota farak bhi na chhoote
+  caseRef=ref.orderByChild('t').startAt(Math.max(0,last-10000));
+  const on=s=>qRemote(s.key,s.val(),dk);
+  caseRef.on('child_added',on,syncErr);
+  caseRef.on('child_changed',on,syncErr);
+}
+let ltT=null;
+function setLT(dk,t){
+  if(!t||t<=(+LT[dk]||0))return;
+  LT[dk]=t;
+  clearTimeout(ltT);ltT=setTimeout(()=>idbSM('lastT',LT),1500);
+}
+let RQ=new Map(),rqT=null;
+function qRemote(id,v,dk){RQ.set(id,{v,dk});if(!rqT)rqT=setTimeout(flushRemote,250);}
+const SYNCF=['caseno','srno','partyname','ps','src','verified','vdate','vby','remark','rmBy','qd'];
+function sameRec(a,b){return SYNCF.every(f=>String(a[f]==null?'':a[f])===String(b[f]==null?'':b[f]));}
+function applyRemote(cur,r){
+  SYNCF.forEach(f=>{cur[f]=r[f];});
+  cur.rmEdit=r.remark?1:0;
+  if(r.ord!=null)cur.ord=r.ord;
+  cur.searchableText=gSrch(cur);
+}
+async function flushRemote(){
+  clearTimeout(rqT);rqT=null;
+  const batch=RQ;RQ=new Map();
+  const toPut=[],toDel=[];let structural=false,pickHit=false,maxT=0,mdk='';
+  for(const [id,e] of batch){
+    if(!e.v||e.dk!==META.activeDk)continue;   // purani list ka bacha hua event
+    const r=fromRemote(e.v,e.dk);
+    if(r.t>maxT){maxT=r.t;mdk=e.dk;}
+    const cur=byId.get(id);
+    if(r.del){
+      if(cur){cData=cData.filter(x=>x.id!==id);toDel.push(id);structural=true;}
+      continue;
+    }
+    if(cur){
+      if(sameRec(cur,r))continue;               // apna hi likha hua — kuch nahi badla
+      const wasV=cur.verified;
+      if(String(cur.caseno)!==String(r.caseno))structural=true;
+      applyRemote(cur,r);toPut.push(cur);
+      if(picked&&picked.id===id){
+        pickHit=true;
+        if(!wasV&&cur.verified&&cur.vby&&cur.vby!==USER)
+          showMS('ℹ️ '+cur.caseno+' abhi '+cur.vby+' ne verify kar di','info');
+      }
+    }else{
+      const c=Object.assign({id},r);delete c.del;delete c.t;
+      if(c.ord==null)c.ord=1e9;
+      c.searchableText=gSrch(c);
+      cData.push(c);toPut.push(c);structural=true;
+    }
+  }
+  if(maxT)setLT(mdk,maxT);
+  if(!toPut.length&&!toDel.length)return;
+  if(structural)reindex();
+  await idbPutMany(toPut);
+  for(const id of toDel)await idbDel(id);
+  if(structural)await recount(META.activeDk);
+  if(pickHit&&picked)selDD(picked.id);
+  refreshView();
+  if(structural){renderDVBar();updateSU();}
+}
+// table mein remark likh rahe ho to table na hile — likhna khatam hote hi refresh
+let needRedraw=false;
+function refreshView(){
+  updateDash();
+  const ae=document.activeElement;
+  if(ae&&ae.closest&&ae.closest('#cvTable')){needRedraw=true;return;}
+  drawTable(getFiltered(),true);
+}
+document.addEventListener('focusout',e=>{
+  if(needRedraw&&e.target&&e.target.closest&&e.target.closest('#cvTable')){
+    needRedraw=false;setTimeout(()=>drawTable(getFiltered(),true),60);
+  }
+});
+
+// ── Likhne wale helpers ──
+const rref=c=>fdb.ref('cv/cases/'+dkKey(c.dk)+'/'+c.id);
+function pushRec(c){if(fbOn&&remoteDks.has(c.dk))rref(c).set(toRemote(c)).catch(syncErr);}
+function pushFields(c,f){if(fbOn&&remoteDks.has(c.dk))rref(c).update(toRemoteFields(f)).catch(syncErr);}
+// hatana = "x" laga do (asli delete nahi) — taaki delta sync mein baaki phones ko bhi pata chale
+function pushDel(c){if(fbOn&&remoteDks.has(c.dk))rref(c).set({x:1,t:TS()}).catch(syncErr);}
+function pushDs(ds){
+  if(!fbOn)return;
+  remoteDks.add(ds.dk);
+  fdb.ref('cv/datasets/'+dkKey(ds.dk)).set(JSON.parse(JSON.stringify(ds))).catch(syncErr);
+}
+async function pushCases(dk,arr,onProg){
+  if(!fbOn||!arr.length)return;
+  if(!(+LT[dk]))setLT(dk,srvNow()-1000);     // khud bheji list dobara download na ho
+  const ref=fdb.ref('cv/cases/'+dkKey(dk)),CH=2500;
+  for(let i=0;i<arr.length;i+=CH){
+    const o={};arr.slice(i,i+CH).forEach(c=>o[c.id]=toRemote(c));
+    await ref.update(o).catch(syncErr);
+    if(onProg)onProg(Math.min(i+CH,arr.length));
+  }
+}
+// Verify — transaction se, taaki do log ek saath dabayein to bhi pehle wale ka naam rahe
+function remoteVerify(rec){
+  if(!fbOn||!remoteDks.has(rec.dk))return;
+  rref(rec).transaction(cur=>{
+    if(cur===null)return toRemote(rec);
+    if(cur.v||cur.verified||cur.x)return;    // pehle se verified (ya hata diya) — chhod do
+    cur.v=1;cur.vd=rec.vdate;cur.vb=rec.vby;delete cur.q;cur.t=TS();
+    return cur;
+  },(err,committed,snap)=>{
+    if(err){syncErr(err);return;}
+    if(committed)return;
+    const v=snap&&snap.val();if(!v)return;
+    const c=getRec(rec.id);if(!c)return;
+    const r=fromRemote(v,rec.dk);
+    applyRemote(c,r);idbPut(strip(c));
+    if(r.vby&&r.vby!==USER){
+      showMS('ℹ️ Already Verified: '+c.caseno+' — by '+r.vby+' · '+fmtDT(r.vdate),'info');
+      speak('Already verified','en-IN');
+    }
+    refreshView();
+  },false);
+}
+// Sync se pehle ki local list ko cloud par bhejo
+async function pushCurrent(){
+  if(!fbOn){showToast('⚠️ Pehle Firebase connect karo','w');return;}
+  const ds=curDs();
+  if(!ds||!cData.length){showToast('⚠️ Koi list chuni hui nahi','w');return;}
+  if(remoteDks.has(ds.dk)){showToast('ℹ️ Ye list pehle se cloud par hai');return;}
+  if(!confirm(dFmt(ds.date)+' · V'+ds.ver+' ('+cData.length+' cases) cloud par bhejein?'))return;
+  if(!ds.by)ds.by=USER;ds.count=cData.length;
+  pushDs(ds);
+  showToast('☁️ Bhej rahe hain...','w');
+  await pushCases(ds.dk,cData);
+  attachCases(ds.dk);
+  showToast('✅ Cloud par bhej di — '+cData.length+' cases');
+}
+function saveFbCfg(){
+  const cfg=readCfgUI();
+  if(!cfg.databaseURL){showToast('❌ Database URL zaroori hai','d');$('fb_databaseURL').focus();return;}
+  if(!/^https:\/\/.+(firebaseio\.com|firebasedatabase\.app)\/?$/.test(cfg.databaseURL)){
+    showToast('❌ Database URL galat lag raha hai — Realtime Database ka URL daalo','d');return;
+  }
+  if(!cfg.apiKey||!cfg.projectId){showToast('❌ API Key aur Project ID bhi bharo','d');return;}
+  lsSet('cv_fbcfg',JSON.stringify(cfg));
+  showToast('🔗 Connect ho raha hai...');
+  setTimeout(()=>location.reload(),600);
+}
+function clearFbCfg(){
+  if(!confirm('Sync band karna hai? (Is phone ka data rahega)'))return;
+  lsSet('cv_fbcfg',null);location.reload();
+}
+
+// ════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════
 let sDeb;
 async function init(){
   const ok=await openDB();
   memMode=!ok;
-  if(!ok){$('stDot').className='warn';$('stDot').title='Storage nahi mila — sirf session';}
+  USER=lsGet('cv_user')||(await idbGM('user'))||'';
+  setUserUI();
+  if(!USER)showLogin();
   const m=await idbGM('meta');
   if(m)Object.assign(META,m);
   DSETS=(await idbGM('datasets'))||[];
@@ -1483,8 +2095,12 @@ async function init(){
   ['courtName','offName','chargeDate'].forEach(id=>{
     $(id).addEventListener('change',()=>{
       META[id==='courtName'?'court':id==='offName'?'off':'date']=$(id).value;saveMeta();
+      if(fbOn)fdb.ref('cv/meta').set({court:META.court||'',off:META.off||'',date:META.date||''}).catch(syncErr);
     });
   });
+  fillCfgUI(fbCfg()||FB_DEFAULT);
+  setSyncUI('off');
+  startSync();
   document.addEventListener('keydown',e=>{
     if(e.key!=='Escape')return;
     const tg=(e.target&&e.target.tagName)||'';
@@ -1494,6 +2110,7 @@ async function init(){
 }
 // APK ka back button — pehle dropdown/modal/tab band ho, tabhi app band ho
 window.appBack=function(){
+  if($('loginOv').classList.contains('on'))return false;
   if($('caseDD')&&$('caseDD').style.display==='block'){closeDD();return true;}
   if($('neModal').classList.contains('on')){closeNE();return true;}
   if($('caseDetailModal').classList.contains('on')){closeCaseDetail();return true;}
@@ -1507,7 +2124,8 @@ window.APP={get cData(){return cData;},META,reindex,drawTable,getFiltered,update
   uploadExcel,downloadExcel,rowFor,sheetChosen,headChosen,guessCols,showMore,scrollToFile,jumpVerify,toggleSplit,exCols,clearPick,selDD,updateRemark,hasRem,nextSr,
   renderDVBar,switchDataset,onDateChange,onVerChange,exportBackup,importBackup,recount,getRec,
   get DSETS(){return DSETS;},
-  onManualInput,selDD,get IMP(){return IMP;},set IMP(v){IMP=v;}};
+  onManualInput,selDD,get IMP(){return IMP;},set IMP(v){IMP=v;},
+  doLogin,doLogout,startSync,pushCurrent,flushRemote,qRemote,get USER(){return USER;}};
 
 </script>
 </body>

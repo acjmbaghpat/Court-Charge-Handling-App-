@@ -722,7 +722,7 @@ function idbPutMany(arr,onProg){
     res();
   });
 }
-function strip(c){const o=Object.assign({},c);delete o.searchableText;delete o.$d;delete o.$n;return o;}
+function strip(c){const o=Object.assign({},c);delete o.searchableText;delete o.$d;delete o.$n;delete o.$stale;return o;}
 
 // ════════════════════════════════════════
 // STATE
@@ -791,13 +791,13 @@ async function ensureDataset(){
   return ds;
 }
 // count hamesha usi dataset ke records se gina jaye
-async function recount(dk){
+async function recount(dk,push=true){
   const d=dsGet(dk);if(!d)return;
   const n=cData.filter(x=>x.dk===dk).length;
   const ch=d.count!==n;
   d.count=n;
   await saveDsets();
-  if(ch&&fbOn&&remoteDks.has(dk))fdb.ref('cv/datasets/'+dkKey(dk)+'/count').set(n).catch(syncErr);
+  if(push&&ch&&fbOn&&remoteDks.has(dk))fdb.ref('cv/datasets/'+dkKey(dk)+'/count').set(n).catch(syncErr);
 }
 
 // ════════════════════════════════════════
@@ -1017,7 +1017,7 @@ async function manualAction(mode){
   if(!already){
     rec.verified=1;rec.vdate=new Date().toISOString();rec.vby=USER;rec.qd='';
     rec.searchableText=gSrch(rec);
-    await idbPut(strip(rec));
+    idbPut(strip(rec));                    // await nahi — warna beech mein type kiya agla Case No mit jaata tha
     speakVerified(rec,false);haptic();
   }else speakVerified(rec,true);
   showMS(already
@@ -1582,7 +1582,7 @@ const needPDF=()=>(window.jspdf&&window.jspdf.jsPDF)?Promise.resolve():loadLib([
   'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js']);
 function srNum(c){const m=String(c.srno==null?'':c.srno).match(/\d+(\.\d+)?/);return m?parseFloat(m[0]):Infinity;}
 function bySerial(a,b){return srNum(a)-srNum(b)||((a.ord||0)-(b.ord||0))||String(a.caseno).localeCompare(String(b.caseno));}
-const isMine=c=>c.verified&&USER&&c.vby===USER;
+const isMine=c=>c.verified&&USER&&sameUser(c.vby,USER);
 function myQrNew(){return cData.filter(c=>isMine(c)&&!c.qd).sort(bySerial);}
 function myQrLast(){
   let mx='';cData.forEach(c=>{if(isMine(c)&&c.qd&&c.qd>mx)mx=c.qd;});
@@ -1617,10 +1617,18 @@ function wrapText(g,t,x,y,w,lh,max){
   }
   if(line)fitText(g,line,x,y+n*lh,w);
 }
-// Top quality, apne aap:
-//  • QR = vector (PDF ke andar asli boxes) — kitna bhi zoom/print karo, bilkul sharp
-//  • Case No + Party Name = 400 DPI image (Hindi naam bhi sahi chhapein)
+// Top quality, apne aap — aur tez:
+//  • QR + Case No + English naam = PDF ke asli vector (kitna bhi zoom/print, bilkul sharp, turant bante hain)
+//  • Hindi naam = 300 DPI chhoti image (PDF ke fonts Hindi nahi jaante)
 // A4 par 3 × 10 = 30 sticker
+const isLatin=t=>/^[\x20-\x7E]*$/.test(String(t||''));
+function pdfFit(pdf,t,maxW,size,minSize){
+  pdf.setFontSize(size);
+  while(size>minSize&&pdf.getTextWidth(t)>maxW){size-=0.5;pdf.setFontSize(size);}
+  if(pdf.getTextWidth(t)<=maxW)return t;
+  while(t.length>1&&pdf.getTextWidth(t+'…')>maxW)t=t.slice(0,-1);
+  return t+'…';
+}
 async function buildQrPdf(list){
   const {jsPDF}=window.jspdf;
   if(qrcode.stringToBytesFuncs&&qrcode.stringToBytesFuncs['UTF-8'])qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
@@ -1629,11 +1637,13 @@ async function buildQrPdf(list){
   const COLS=3,ROWS=10,PER=COLS*ROWS,PW=210,PH=297,MX=6,MT=7,MB=12;
   const LW=(PW-2*MX)/COLS,LH=(PH-MT-MB)/ROWS;
   const QS=LH-3;                                  // QR ka size (mm)
-  const TW=LW-1.5-QS-1.2-1.5,TH=LH-3;             // text wali jagah (mm)
-  const S=16;                                     // 16 px/mm ≈ 406 DPI
-  const cv=document.createElement('canvas');cv.width=Math.ceil(TW*S);cv.height=Math.ceil(TH*S);
+  const TW=LW-1.5-QS-1.2-1.5;                     // text ki chaudai (mm)
+  const NY=8.2,NH=LH-NY-1.6;                      // party name ki jagah (mm)
+  const S=12;                                     // 12 px/mm ≈ 300 DPI
+  const cv=document.createElement('canvas');cv.width=Math.ceil(TW*S);cv.height=Math.ceil(NH*S);
   const g=cv.getContext('2d');
   const F="'Noto Sans Devanagari','Nirmala UI','Outfit',Roboto,'Segoe UI',sans-serif";
+  const PT=0.3528;                                // 1 pt = 0.3528 mm
   const pages=Math.ceil(list.length/PER);
   for(let pg=0;pg<pages;pg++){
     if(pg)pdf.addPage();
@@ -1643,7 +1653,7 @@ async function buildQrPdf(list){
       // katne ki halki line
       pdf.setDrawColor(190,196,208);pdf.setLineWidth(0.2);pdf.setLineDashPattern([1,1],0);
       pdf.rect(x+0.15,y+0.15,LW-0.3,LH-0.3,'S');pdf.setLineDashPattern([],0);
-      // QR — vector, ek line ke lagatar kaale modules ek hi box (beech mein safed lakeer na aaye)
+      // QR — vector, ek line ke lagatar kaale modules ek hi box
       const q=qrcode(0,'M');q.addData(String(c.caseno));q.make();
       const n=q.getModuleCount(),cell=QS/(n+2),qx=x+1.5+cell,qy=y+1.5+cell;
       pdf.setFillColor(0,0,0);
@@ -1656,15 +1666,28 @@ async function buildQrPdf(list){
           k=e;
         }
       }
-      // Case No + Party Name
-      g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);
-      g.fillStyle='#000';g.textBaseline='top';
-      const tw=cv.width-2;
-      g.font='800 '+(3.8*S)+'px '+F;fitText(g,c.caseno,0,1.1*S,tw);
-      g.font='500 '+(2.9*S)+'px '+F;wrapText(g,c.partyname,0,7.1*S,tw,3.5*S,4);
-      pdf.addImage(cv.toDataURL('image/png'),'PNG',x+1.5+QS+1.2,y+1.5,TW,TH,undefined,'FAST');
+      const tx=x+1.5+QS+1.2;
+      pdf.setTextColor(0,0,0);
+      // Case No — vector
+      pdf.setFont('helvetica','bold');
+      const cn=String(c.caseno||'');
+      pdf.text(isLatin(cn)?pdfFit(pdf,cn,TW,11,7):cn.replace(/[^\x20-\x7E]/g,'?'),tx,y+1.6,{baseline:'top'});
+      // Party Name
+      const nm=String(c.partyname||'').replace(/\s+/g,' ').trim();
+      if(!nm)return;
+      if(isLatin(nm)){                            // vector text, 4 line tak
+        pdf.setFont('helvetica','normal');pdf.setFontSize(8.2);
+        let lines=pdf.splitTextToSize(nm,TW);
+        if(lines.length>4){lines=lines.slice(0,4);lines[3]=pdfFit(pdf,lines[3]+'…',TW,8.2,8.2);}
+        pdf.text(lines,tx,y+NY,{baseline:'top',lineHeightFactor:1.2});
+      }else{                                      // Hindi — chhoti image
+        g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);
+        g.fillStyle='#000';g.textBaseline='top';
+        g.font='500 '+(2.9*S)+'px '+F;wrapText(g,nm,0,0.2*S,cv.width-2,3.5*S,4);
+        pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',tx,y+NY,TW,NH);
+      }
     });
-    pdf.setTextColor(110,110,110);pdf.setFontSize(8);
+    pdf.setFont('helvetica','normal');pdf.setTextColor(110,110,110);pdf.setFontSize(8);
     pdf.text('Page '+(pg+1)+' / '+pages,MX,PH-5);
     await new Promise(r=>setTimeout(r,0));        // beech mein UI ko saans lene do
   }
@@ -1911,11 +1934,12 @@ async function attachCases(dk){
     }catch(e){syncErr(e);return;}
   }
   if(gen!==attachGen)return;
-  // 2 minute peeche se — ghadi ka chhota farak bhi na chhoote
+  // 10 second peeche se — ghadi ka chhota farak bhi na chhoote
   caseRef=ref.orderByChild('t').startAt(Math.max(0,last-10000));
   const on=s=>qRemote(s.key,s.val(),dk);
   caseRef.on('child_added',on,syncErr);
   caseRef.on('child_changed',on,syncErr);
+  resendPending();
 }
 let ltT=null;
 function setLT(dk,t){
@@ -1948,12 +1972,13 @@ async function flushRemote(){
     }
     if(cur){
       if(sameRec(cur,r))continue;               // apna hi likha hua — kuch nahi badla
+      if(cur.pq){cur.$stale=1;continue;}        // is phone ka badlaav abhi raste mein hai — uske baad taaza lenge
       const wasV=cur.verified;
       if(String(cur.caseno)!==String(r.caseno))structural=true;
       applyRemote(cur,r);toPut.push(cur);
       if(picked&&picked.id===id){
         pickHit=true;
-        if(!wasV&&cur.verified&&cur.vby&&cur.vby!==USER)
+        if(!wasV&&cur.verified&&cur.vby&&!sameUser(cur.vby,USER))
           showMS('ℹ️ '+cur.caseno+' abhi '+cur.vby+' ne verify kar di','info');
       }
     }else{
@@ -1968,14 +1993,19 @@ async function flushRemote(){
   if(structural)reindex();
   await idbPutMany(toPut);
   for(const id of toDel)await idbDel(id);
-  if(structural)await recount(META.activeDk);
+  if(structural)await recount(META.activeDk,false);
   if(pickHit&&picked)selDD(picked.id);
   refreshView();
   if(structural){renderDVBar();updateSU();}
 }
 // table mein remark likh rahe ho to table na hile — likhna khatam hote hi refresh
 let needRedraw=false;
-function refreshView(){
+let rvT=null;
+function refreshView(){                     // bahut saare remote badlaav = ek hi baar table banao
+  if(rvT)return;
+  rvT=setTimeout(()=>{rvT=null;refreshNow();},300);
+}
+function refreshNow(){
   updateDash();
   const ae=document.activeElement;
   if(ae&&ae.closest&&ae.closest('#cvTable')){needRedraw=true;return;}
@@ -1987,12 +2017,37 @@ document.addEventListener('focusout',e=>{
   }
 });
 
-// ── Likhne wale helpers ──
+// ── Likhne wale helpers — OUTBOX ke saath ──
+// Firebase offline writes sirf memory mein rakhta hai; app band hui to wo kho jaate hain.
+// Isliye har record par pq (pending count) phone mein save hota hai. Server "OK" bole tabhi hatta hai.
+// App dobara khule to jin par pq bacha hai, wo transaction se dobara bheje jaate hain.
+const sameUser=(a,b)=>String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();
+const canSync=c=>fbOn&&c&&remoteDks.has(c.dk);
+function pqStart(c){c.pq=(c.pq||0)+1;idbPut(strip(c));}
+function pqDone(c){
+  c.pq=Math.max(0,(c.pq||0)-1);
+  if(c.pq)return;
+  idbPut(strip(c));
+  if(c.$stale){                         // beech mein kisi aur ka badlaav aaya tha — ab taaza le lo
+    c.$stale=0;
+    rref(c).once('value').then(s=>{const v=s.val();if(v)qRemote(c.id,v,c.dk);}).catch(()=>{});
+  }
+}
+function track(c,p){pqStart(c);return p.then(r=>{pqDone(c);return r;},e=>{syncErr(e);throw e;});}
 const rref=c=>fdb.ref('cv/cases/'+dkKey(c.dk)+'/'+c.id);
-function pushRec(c){if(fbOn&&remoteDks.has(c.dk))rref(c).set(toRemote(c)).catch(syncErr);}
-function pushFields(c,f){if(fbOn&&remoteDks.has(c.dk))rref(c).update(toRemoteFields(f)).catch(syncErr);}
+function pushRec(c){if(canSync(c))track(c,rref(c).set(toRemote(c))).catch(()=>{});}
+function pushFields(c,f){if(canSync(c))track(c,rref(c).update(toRemoteFields(f))).catch(()=>{});}
 // hatana = "x" laga do (asli delete nahi) — taaki delta sync mein baaki phones ko bhi pata chale
-function pushDel(c){if(fbOn&&remoteDks.has(c.dk))rref(c).set({x:1,t:TS()}).catch(syncErr);}
+let PDEL=null;
+async function pdelLoad(){if(!PDEL)PDEL=(await idbGM('pendDel'))||[];return PDEL;}
+async function pushDel(c){
+  if(!canSync(c))return;
+  await pdelLoad();
+  const item={dk:c.dk,id:c.id};PDEL.push(item);idbSM('pendDel',PDEL);
+  rref(c).set({x:1,t:TS()}).then(()=>{
+    PDEL=PDEL.filter(x=>!(x.dk===item.dk&&x.id===item.id));idbSM('pendDel',PDEL);
+  }).catch(syncErr);
+}
 function pushDs(ds){
   if(!fbOn)return;
   remoteDks.add(ds.dk);
@@ -2008,27 +2063,70 @@ async function pushCases(dk,arr,onProg){
     if(onProg)onProg(Math.min(i+CH,arr.length));
   }
 }
+// Cloud wala record + is phone ka badlaav = ek. Verify par pehle wale ka naam hi rahega.
+function mergeLocal(cur,c){
+  if(cur===null)return toRemote(c);
+  if(cur.x)return;                            // kisi ne hata diya — chhod do
+  const mine=toRemote(c);
+  ['s','c','p','ps','o','r','rb','n'].forEach(k=>{if(k in mine)cur[k]=mine[k];else delete cur[k];});
+  const otherV=cur.v&&cur.vb&&!sameUser(cur.vb,c.vby);
+  if(!otherV){                                 // verification is phone ki chalegi
+    ['v','vd','vb','q'].forEach(k=>{if(k in mine)cur[k]=mine[k];else delete cur[k];});
+  }
+  cur.t=TS();
+  return cur;
+}
+function afterTx(c,committed,snap,announce){
+  const v=snap&&snap.val();if(!v)return;
+  const r=fromRemote(v,c.dk);
+  const live=getRec(c.id);
+  if(r.del){                                  // record hi hat chuka hai
+    if(live){cData=cData.filter(x=>x.id!==c.id);idbDel(c.id);reindex();recount(c.dk,false);refreshView();}
+    return;
+  }
+  // committed = cloud par wahi gaya jo humne bheja; phone par us ke baad ke badlaav (jaise remark) bhi hain — kuch mat chhedo
+  if(committed||!live)return;
+  // not committed = koi pehle verify kar chuka — sirf verification wale khane cloud se lo, baaki (remark) phone ka hi rahe
+  if(live.verified!==r.verified||live.vby!==r.vby||live.vdate!==r.vdate||(live.qd||'')!==(r.qd||'')){
+    live.verified=r.verified;live.vdate=r.vdate;live.vby=r.vby;live.qd=r.qd;
+    live.searchableText=gSrch(live);idbPut(strip(live));refreshView();
+  }
+  if(announce&&r.verified&&r.vby&&!sameUser(r.vby,USER)){
+    showMS('ℹ️ Already Verified: '+live.caseno+' — by '+r.vby+' · '+fmtDT(r.vdate),'info');
+    speak('Already verified','en-IN');
+  }
+}
 // Verify — transaction se, taaki do log ek saath dabayein to bhi pehle wale ka naam rahe
 function remoteVerify(rec){
-  if(!fbOn||!remoteDks.has(rec.dk))return;
-  rref(rec).transaction(cur=>{
+  if(!canSync(rec))return;
+  const p=rref(rec).transaction(cur=>{
     if(cur===null)return toRemote(rec);
     if(cur.v||cur.verified||cur.x)return;    // pehle se verified (ya hata diya) — chhod do
     cur.v=1;cur.vd=rec.vdate;cur.vb=rec.vby;delete cur.q;cur.t=TS();
     return cur;
-  },(err,committed,snap)=>{
-    if(err){syncErr(err);return;}
-    if(committed)return;
-    const v=snap&&snap.val();if(!v)return;
-    const c=getRec(rec.id);if(!c)return;
-    const r=fromRemote(v,rec.dk);
-    applyRemote(c,r);idbPut(strip(c));
-    if(r.vby&&r.vby!==USER){
-      showMS('ℹ️ Already Verified: '+c.caseno+' — by '+r.vby+' · '+fmtDT(r.vdate),'info');
-      speak('Already verified','en-IN');
-    }
-    refreshView();
-  },false);
+  },undefined,false);
+  track(rec,p).then(res=>afterTx(rec,res.committed,res.snapshot,true)).catch(()=>{});
+}
+// App khulte hi: pichhli baar jo cloud tak nahi pahuncha, wo bhejo
+let resent=false;
+async function resendPending(){
+  if(resent||!fbOn)return;resent=true;
+  const list=cData.filter(c=>c.pq&&remoteDks.has(c.dk));
+  await pdelLoad();
+  const dels=PDEL.filter(x=>remoteDks.has(x.dk));
+  if(!list.length&&!dels.length)return;
+  console.log('resend',list.length,'records,',dels.length,'deletes');
+  for(const c of list){
+    c.pq=0;
+    const p=rref(c).transaction(cur=>mergeLocal(cur,c),undefined,false);
+    track(c,p).then(res=>afterTx(c,res.committed,res.snapshot,false)).catch(()=>{});
+  }
+  for(const d of dels){
+    fdb.ref('cv/cases/'+dkKey(d.dk)+'/'+d.id).set({x:1,t:TS()}).then(()=>{
+      PDEL=PDEL.filter(x=>!(x.dk===d.dk&&x.id===d.id));idbSM('pendDel',PDEL);
+    }).catch(syncErr);
+  }
+  showToast('☁️ Pichhli baar ke '+(list.length+dels.length)+' badlaav cloud par bhej diye');
 }
 // Sync se pehle ki local list ko cloud par bhejo
 async function pushCurrent(){

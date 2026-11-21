@@ -443,7 +443,7 @@ tr:hover td{background:#f0f4ff}
     <button class="btn btn-pu" id="qrBtn" onclick="downloadQR(false)">🔳 QR Download</button>
     <button class="btn btn-opu" id="qrAgain" onclick="downloadQR(true)" style="display:none">🔁 Pichhla batch dobara download</button>
     <div style="color:var(--mu);font-size:11px;margin-top:10px;font-weight:500;line-height:1.6">
-      Sirf <b>aapki</b> verify ki hui files ke QR banenge, list ke kram mein (A4 sheet, 30 sticker — har sticker par sirf QR, Case No aur Party Name). Ek baar download ho gaye to agli baar sirf nayi verify ki hui files aayengi.
+      Sirf <b>aapki</b> verify ki hui files ke QR banenge, list ke kram mein (A4 sheet, 30 sticker — har sticker par sirf QR aur uske neeche Case No). Ek baar download ho gaye to agli baar sirf nayi verify ki hui files aayengi.
     </div>
   </div>
 
@@ -1617,11 +1617,8 @@ function wrapText(g,t,x,y,w,lh,max){
   }
   if(line)fitText(g,line,x,y+n*lh,w);
 }
-// Top quality, apne aap — aur tez:
-//  • QR + Case No + English naam = PDF ke asli vector (kitna bhi zoom/print, bilkul sharp, turant bante hain)
-//  • Hindi naam = 300 DPI chhoti image (PDF ke fonts Hindi nahi jaante)
+// Top quality, apne aap: QR + uske neeche sirf Case No — dono PDF ke asli vector (bilkul sharp, turant)
 // A4 par 3 × 10 = 30 sticker
-const isLatin=t=>/^[\x20-\x7E]*$/.test(String(t||''));
 function pdfFit(pdf,t,maxW,size,minSize){
   pdf.setFontSize(size);
   while(size>minSize&&pdf.getTextWidth(t)>maxW){size-=0.5;pdf.setFontSize(size);}
@@ -1632,18 +1629,11 @@ function pdfFit(pdf,t,maxW,size,minSize){
 async function buildQrPdf(list){
   const {jsPDF}=window.jspdf;
   if(qrcode.stringToBytesFuncs&&qrcode.stringToBytesFuncs['UTF-8'])qrcode.stringToBytes=qrcode.stringToBytesFuncs['UTF-8'];
-  try{await document.fonts.ready;}catch(e){}
   const pdf=new jsPDF({unit:'mm',format:'a4',orientation:'portrait',compress:true});
   const COLS=3,ROWS=10,PER=COLS*ROWS,PW=210,PH=297,MX=6,MT=7,MB=12;
   const LW=(PW-2*MX)/COLS,LH=(PH-MT-MB)/ROWS;
-  const QS=LH-3;                                  // QR ka size (mm)
-  const TW=LW-1.5-QS-1.2-1.5;                     // text ki chaudai (mm)
-  const NY=8.2,NH=LH-NY-1.6;                      // party name ki jagah (mm)
-  const S=12;                                     // 12 px/mm ≈ 300 DPI
-  const cv=document.createElement('canvas');cv.width=Math.ceil(TW*S);cv.height=Math.ceil(NH*S);
-  const g=cv.getContext('2d');
-  const F="'Noto Sans Devanagari','Nirmala UI','Outfit',Roboto,'Segoe UI',sans-serif";
-  const PT=0.3528;                                // 1 pt = 0.3528 mm
+  const TXT=4.6;                                  // Case No ki line (mm)
+  const QS=LH-1.2-TXT-0.6;                        // QR ka size (mm)
   const pages=Math.ceil(list.length/PER);
   for(let pg=0;pg<pages;pg++){
     if(pg)pdf.addPage();
@@ -1653,9 +1643,10 @@ async function buildQrPdf(list){
       // katne ki halki line
       pdf.setDrawColor(190,196,208);pdf.setLineWidth(0.2);pdf.setLineDashPattern([1,1],0);
       pdf.rect(x+0.15,y+0.15,LW-0.3,LH-0.3,'S');pdf.setLineDashPattern([],0);
-      // QR — vector, ek line ke lagatar kaale modules ek hi box
-      const q=qrcode(0,'M');q.addData(String(c.caseno));q.make();
-      const n=q.getModuleCount(),cell=QS/(n+2),qx=x+1.5+cell,qy=y+1.5+cell;
+      // QR — beech mein, vector
+      const cn=String(c.caseno||'');
+      const q=qrcode(0,'M');q.addData(cn);q.make();
+      const n=q.getModuleCount(),cell=QS/(n+2),qx=x+(LW-QS)/2+cell,qy=y+0.8+cell;
       pdf.setFillColor(0,0,0);
       for(let r=0;r<n;r++){
         let k=0;
@@ -1666,26 +1657,10 @@ async function buildQrPdf(list){
           k=e;
         }
       }
-      const tx=x+1.5+QS+1.2;
-      pdf.setTextColor(0,0,0);
-      // Case No — vector
-      pdf.setFont('helvetica','bold');
-      const cn=String(c.caseno||'');
-      pdf.text(isLatin(cn)?pdfFit(pdf,cn,TW,11,7):cn.replace(/[^\x20-\x7E]/g,'?'),tx,y+1.6,{baseline:'top'});
-      // Party Name
-      const nm=String(c.partyname||'').replace(/\s+/g,' ').trim();
-      if(!nm)return;
-      if(isLatin(nm)){                            // vector text, 4 line tak
-        pdf.setFont('helvetica','normal');pdf.setFontSize(8.2);
-        let lines=pdf.splitTextToSize(nm,TW);
-        if(lines.length>4){lines=lines.slice(0,4);lines[3]=pdfFit(pdf,lines[3]+'…',TW,8.2,8.2);}
-        pdf.text(lines,tx,y+NY,{baseline:'top',lineHeightFactor:1.2});
-      }else{                                      // Hindi — chhoti image
-        g.fillStyle='#fff';g.fillRect(0,0,cv.width,cv.height);
-        g.fillStyle='#000';g.textBaseline='top';
-        g.font='500 '+(2.9*S)+'px '+F;wrapText(g,nm,0,0.2*S,cv.width-2,3.5*S,4);
-        pdf.addImage(cv.toDataURL('image/jpeg',0.92),'JPEG',tx,y+NY,TW,NH);
-      }
+      // neeche Case No — beech mein
+      pdf.setFont('helvetica','bold');pdf.setTextColor(0,0,0);
+      const t=pdfFit(pdf,cn.replace(/[^\x20-\x7E]/g,'?'),LW-4,11,6);
+      pdf.text(t,x+LW/2,y+0.8+QS+0.3,{baseline:'top',align:'center'});
     });
     pdf.setFont('helvetica','normal');pdf.setTextColor(110,110,110);pdf.setFontSize(8);
     pdf.text('Page '+(pg+1)+' / '+pages,MX,PH-5);
